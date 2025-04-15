@@ -39,6 +39,10 @@
         "rector/rector": "^2.2",
         "rector/rector-laravel": "^2.1"
     },
+    "suggest": {
+        "aws/aws-php-sns-message-validator": "Required when using Amazon SES",
+        "aws/aws-sdk-php": "Required when using Amazon SES, also required by Laravel"
+    },
     "autoload": {
         "psr-4": {
             "Backstage\\Mails\\": "src",
