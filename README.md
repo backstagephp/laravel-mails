@@ -84,9 +84,9 @@ Add the API key of your email service provider to the `config/services.php` file
     
     // This one is package-specific
     'configuration_set_name' => env('AWS_SES_CONFIGURATION_SET', 'laravel-mails-ses-webhook'),
-    'account_id' => env('AWS_ACCOUNT_ID', '') // Your AWS account id
-    'scheme' => 'https' // 'http' or 'https',
-    'verify_signature' => true
+    'account_id' => env('AWS_ACCOUNT_ID', ''), // Your AWS account id
+    'scheme' => 'https', // 'http' or 'https',
+    'verify_signature' => true,
 ],
 ```
 
