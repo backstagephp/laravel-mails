@@ -245,6 +245,8 @@ When using Amazon SES, you also require the following dependencies
 composer require aws/aws-sdk-php aws/aws-php-sns-message-validator
 ```
 
+You aws ses user should also have the authorization to create SNS topics 
+
 ## Usage
 
 ### Logging

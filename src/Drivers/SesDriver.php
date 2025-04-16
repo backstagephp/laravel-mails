@@ -2,7 +2,9 @@
 
 namespace Vormkracht10\Mails\Drivers;
 
-use Aws\Ses\SesClient;
+use Aws\Exception\AwsException;
+use Aws\Sns\Message;
+use Aws\Sns\MessageValidator;
 use Aws\Sns\SnsClient;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
@@ -19,9 +21,8 @@ class SesDriver extends MailDriver implements MailDriverContract
 {
     public function registerWebhooks($components): void
     {
-        /** @var SesTransport|null $sesTransport */
-        $sesTransport = Mail::driver('ses');
-        if ($sesTransport) {
+        $mailer = Mail::driver('ses');
+        if ($mailer === null) {
             $components->warn("Failed to create Ses webhook");
             $components->error("There is no Amazon SES Driver configured in your laravel application.");
             return;
@@ -67,17 +68,25 @@ class SesDriver extends MailDriver implements MailDriverContract
             $eventTypes[] = 'Complaint';
         }
 
+        /** @var SesTransport $sesTransport */
+        $sesTransport = $mailer->getSymfonyTransport();
         $sesClient = $sesTransport->ses();
-        $configurationSet = config('services.ses.configuration_set_name', 'laravel-mails-ses-webhook');
+        $configurationSet = config('services.ses.options.ConfigurationSetName', 'laravel-mails-ses-webhook');
 
         try {
-            // 1. Create Configuration Set
-            $sesClient->createConfigurationSet([
-                'ConfigurationSet' => [
-                    'Name' => $configurationSet,
-                ],
-            ]);
-
+            // 1. Get or create the Configuration Set
+            try {
+                $sesClient->createConfigurationSet([
+                    'ConfigurationSet' => [
+                        'Name' => $configurationSet,
+                    ],
+                ]);
+            } catch (AwsException $e) {
+                // Already exists, move on!
+                if ($e->getAwsErrorCode() !== 'ConfigurationSetAlreadyExists') {
+                    throw $e;
+                }
+            }
 
             // 2. Create a SNS Topic
             $config = config('services.sns', config('services.ses', []));
@@ -89,8 +98,8 @@ class SesDriver extends MailDriver implements MailDriverContract
 
             // 3. Give access to SES to publish notifications to the topic.
             $snsClient->addPermission([
-                'AWSAccountId' => $config['account_id'] ?? '',
-                'ActionName' => 'Publish',
+                'AWSAccountId' => [$config['account_id'] ?? ''],
+                'ActionName' => ['Publish'],
                 'Label' => 'ses-notification-policy',
                 'TopicArn' => $topicArn,
             ]);
@@ -98,10 +107,19 @@ class SesDriver extends MailDriver implements MailDriverContract
             // 4. Set the channels
             $eventTypes = array_unique($eventTypes);
             foreach ($eventTypes as $eventType) {
+                $identity = config('services.ses.identity', config('mail.from.address'));
+                // get notified for the various types of events via SNS
                 $sesClient->setIdentityNotificationTopic([
-                    'Identity' => config('services.ses.identity', config('mail.from.address')),
+                    'Identity' => $identity,
                     'NotificationType' => $eventType,
                     'SnsTopic' => $topicArn,
+                ]);
+
+                // Force SNS to include the SES mail headers in the notification
+                $sesClient->setIdentityHeadersInNotificationsEnabled([
+                    'Identity' => $identity,
+                    'NotificationType' => $eventType,
+                    'Enabled' => true,
                 ]);
             }
 
@@ -110,7 +128,7 @@ class SesDriver extends MailDriver implements MailDriverContract
                 'ConfigurationSetName' => $configurationSet,
                 'EventDestination' => [
                     'Enabled' => true,
-                    'Name' => $configurationSet,
+                    'Name' => $configurationSet . '-' . uniqid(),
                     'MatchingEventTypes' => $events,
                     'SNSDestination' => [
                         'TopicARN' => $topicArn,
@@ -139,77 +157,103 @@ class SesDriver extends MailDriver implements MailDriverContract
 
     public function verifyWebhookSignature(array $payload): bool
     {
-        dd($payload);
         if (app()->runningUnitTests()) {
             return true;
         }
 
-        if (empty($payload['signature']['timestamp']) || empty($payload['signature']['token']) || empty($payload['signature']['signature'])) {
+        // Weird SNS thing, you need to read the raw post body
+        $message = Message::fromRawPostData();
+
+        $validator = (new MessageValidator(function ($url) {
+            return Http::timeout(10)->get($url)->body();
+        }));
+
+        try {
+            $validator->validate($message);
+            if ($message['Type'] === 'SubscriptionConfirmation') {
+                Http::timeout(10)->get($message['SubscribeURL'])->throw();
+            }
+            return true;
+        } catch (\Throwable $e) {
+            report($e);
             return false;
         }
-
-        $hmac = hash_hmac('sha256', $payload['signature']['timestamp'] . $payload['signature']['token'], config('services.mailgun.webhook_signing_key'));
-
-        if (function_exists('hash_equals')) {
-            return hash_equals($hmac, $payload['signature']['signature']);
-        }
-
-        return $hmac === $payload['signature']['signature'];
     }
 
     public function attachUuidToMail(MessageSending $event, string $uuid): MessageSending
     {
-        $event->message->getHeaders()->addTextHeader('X-Mailgun-Variables', json_encode([config('mails.headers.uuid') => $uuid]));
+        $event->message->getHeaders()->addTextHeader($this->uuidHeaderName, $uuid);
 
         return $event;
     }
 
     public function getUuidFromPayload(array $payload): ?string
     {
-        return $payload['event-data']['user-variables'][$this->uuidHeaderName] ?? null;
+        $message = Message::fromRawPostData();
+        $headers = $message['Message']['mail']['headers'] ?? [];
+        $header = Arr::first($headers, function ($header) {
+            return $header['name'] === config('mails.headers.uuid');
+        });
+
+        return $header['value'] ?? null;
     }
 
     protected function getTimestampFromPayload(array $payload): string
     {
-        return $payload['event-data']['timestamp'];
+        foreach (['click', 'open', 'bounce', 'complaint', 'delivery', 'mail'] as $event) {
+            if (isset($payload['Message'][$event]['timestamp'])) {
+                return $payload['Message'][$event]['timestamp'];
+            }
+        }
+        return $payload['Message']['Timestamp'];
+    }
+
+    public function getDataFromPayload(array $payload): array
+    {
+        $message = Message::fromRawPostData();
+        $payload = $message->toArray();
+
+        return collect($this->dataMapping())
+            ->mapWithKeys(function ($values, $key) use ($payload) {
+                foreach ($values as $value) {
+                    $value = data_get($payload, $value);
+                    if ($value !== null) {
+                        return [$key => $value];
+                    }
+                }
+                return null;
+            })
+            ->filter()
+            ->merge([
+                'payload' => $payload,
+                'type' => $this->getEventFromPayload($payload),
+                'occurred_at' => $this->getTimestampFromPayload($payload),
+            ])
+            ->toArray();
     }
 
     public function eventMapping(): array
     {
         return [
-            EventType::ACCEPTED->value => ['event-data.event' => 'accepted'],
-            EventType::CLICKED->value => ['event-data.event' => 'clicked'],
-            EventType::COMPLAINED->value => ['event-data.event' => 'complained'],
-            EventType::DELIVERED->value => ['event-data.event' => 'delivered'],
-            EventType::HARD_BOUNCED->value => ['event-data.event' => 'failed', 'event-data.severity' => 'permanent'],
-            EventType::OPENED->value => ['event-data.event' => 'opened'],
-            EventType::SOFT_BOUNCED->value => ['event-data.event' => 'failed', 'event-data.severity' => 'temporary'],
-            EventType::UNSUBSCRIBED->value => ['event-data.event' => 'unsubscribed'],
+            EventType::ACCEPTED->value => ['Message.eventType' => 'Send'],
+            EventType::CLICKED->value => ['Message.eventType' => 'Click'],
+            EventType::COMPLAINED->value => ['Message.eventType' => 'Complaint'],
+            EventType::DELIVERED->value => ['Message.eventType' => 'Delivery'],
+            EventType::OPENED->value => ['Message.eventType' => 'Open'],
+            EventType::HARD_BOUNCED->value => ['Message.eventType' => 'Bounce', 'Message.bounce.bounceType' => 'Permanent'],
+            EventType::SOFT_BOUNCED->value => ['Message.eventType' => 'Bounce', 'Message.bounce.bounceType' => 'Temporary'],
         ];
     }
 
     public function dataMapping(): array
     {
         return [
-            'ip_address' => 'event-data.ip',
-            'platform' => 'event-data.client-info.device-type',
-            'os' => 'event-data.client-info.client-os',
-            'browser' => 'event-data.client-info.client-name',
-            'user_agent' => 'event-data.client-info.user-agent',
-            'city' => 'event-data.geolocation.city',
-            'country_code' => 'event-data.geolocation.country',
-            'link' => 'event-data.url',
-            'tag' => 'event-data.tags',
+            'ip_address' => ['Message.click.ipAddress', 'Message.open.ipAddress'],
+            'browser' => ['Message.mail.client-info.client-name'],
+            'user_agent' => ['Message.click.userAgent', 'Message.open.userAgent','Message.complaint.userAgent'],
+            'link' => ['Message.click.link'],
+            'tag' => ['Message.click.linkTags'],
         ];
-    }
-
-    public function unsuppressEmailAddress(string $address): Response
-    {
-        $client = Http::asJson()
-            ->withBasicAuth('api', config('services.mailgun.secret'))
-            ->baseUrl(config('services.mailgun.endpoint') . '/v3/');
-
-        return $client->delete(config('services.mailgun.domain') . '/unsubscribes/' . $address);
     }
 
     protected function createSnsClient(array $config): SnsClient
@@ -226,10 +270,10 @@ class SesDriver extends MailDriver implements MailDriverContract
 
     protected function addSnsCredentials(array $config): array
     {
-        if (! empty($config['key']) && ! empty($config['secret'])) {
+        if (!empty($config['key']) && !empty($config['secret'])) {
             $config['credentials'] = Arr::only($config, ['key', 'secret']);
 
-            if (! empty($config['token'])) {
+            if (!empty($config['token'])) {
                 $config['credentials']['token'] = $config['token'];
             }
         }
