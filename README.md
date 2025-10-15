@@ -1,7 +1,7 @@
 # Keep track of all events on sent emails in Laravel and get notified when something is wrong
 
 [![Total Downloads](https://img.shields.io/packagist/dt/backstage/laravel-mails.svg?style=flat-square)](https://packagist.org/packages/backstage/laravel-mails)
-[![Tests](https://github.com/backstagephp/laravel-mails/actions/workflows/run-tests.yml/badge.svg?branch=main)](https://github.com/backstagephp/laravel-mails/actions/workflows/run-tests.yml)
+[![Tests](https://github.com/backstagephp/laravel-mails/actions/workflows/pest.yml/badge.svg?branch=main)](https://github.com/backstagephp/laravel-mails/actions/workflows/pest.yml)
 [![PHPStan](https://github.com/backstagephp/laravel-mails/actions/workflows/phpstan.yml/badge.svg?branch=main)](https://github.com/backstagephp/laravel-mails/actions/workflows/phpstan.yml)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/backstagephp/laravel-mails)
 ![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/backstage/laravel-mails)
