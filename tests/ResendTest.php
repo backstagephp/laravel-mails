@@ -1,6 +1,7 @@
 <?php
 
 use Backstage\Mails\Enums\EventType;
+use Backstage\Mails\Enums\Provider;
 use Backstage\Mails\Models\Mail as MailModel;
 use Backstage\Mails\Models\MailEvent;
 use Illuminate\Mail\Message;
@@ -23,7 +24,7 @@ it('can receive incoming delivery webhook from resend', function (): void {
 
     $mail = MailModel::latest()->first();
 
-    post(URL::signedRoute('mails.webhook', ['provider' => 'resend']), [
+    post(URL::signedRoute('mails.webhook', ['provider' => Provider::RESEND]), [
         'created_at' => '2023-05-19T22:09:32Z',
         'data' => [
             'created_at' => '2025-01-09 14:17:29.059104+00',
@@ -61,7 +62,7 @@ it('can receive incoming hard bounce webhook from resend', function (): void {
 
     $mail = MailModel::latest()->first();
 
-    post(URL::signedRoute('mails.webhook', ['provider' => 'resend']), [
+    post(URL::signedRoute('mails.webhook', ['provider' => Provider::RESEND]), [
         'created_at' => '2023-05-19T22:09:32Z',
         'data' => [
             'created_at' => '2025-01-09 14:17:29.059104+00',
@@ -99,7 +100,7 @@ it('can receive incoming soft bounce webhook from resend', function (): void {
 
     $mail = MailModel::latest()->first();
 
-    post(URL::signedRoute('mails.webhook', ['provider' => 'resend']), [
+    post(URL::signedRoute('mails.webhook', ['provider' => Provider::RESEND]), [
         'created_at' => '2023-05-19T22:09:32Z',
         'data' => [
             'created_at' => '2025-01-09 14:17:29.059104+00',
@@ -137,7 +138,7 @@ it('can receive incoming complaint webhook from resend', function (): void {
 
     $mail = MailModel::latest()->first();
 
-    post(URL::signedRoute('mails.webhook', ['provider' => 'resend']), [
+    post(URL::signedRoute('mails.webhook', ['provider' => Provider::RESEND]), [
         'created_at' => '2023-05-19T22:09:32Z',
         'data' => [
             'created_at' => '2025-01-09 14:17:29.059104+00',
@@ -175,7 +176,7 @@ it('can receive incoming open webhook from resend', function (): void {
 
     $mail = MailModel::latest()->first();
 
-    post(URL::signedRoute('mails.webhook', ['provider' => 'resend']), [
+    post(URL::signedRoute('mails.webhook', ['provider' => Provider::RESEND]), [
         'created_at' => '2023-05-19T22:09:32Z',
         'data' => [
             'created_at' => '2025-01-09 14:17:29.059104+00',
@@ -213,7 +214,7 @@ it('can receive incoming click webhook from resend', function (): void {
 
     $mail = MailModel::latest()->first();
 
-    post(URL::signedRoute('mails.webhook', ['provider' => 'resend']), [
+    post(URL::signedRoute('mails.webhook', ['provider' => Provider::RESEND]), [
         'created_at' => '2023-05-19T22:09:32Z',
         'data' => [
             'created_at' => '2025-01-09 14:17:29.059104+00',

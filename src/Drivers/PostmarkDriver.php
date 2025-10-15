@@ -3,10 +3,7 @@
 namespace Backstage\Mails\Drivers;
 
 use Backstage\Mails\Contracts\MailDriverContract;
-use Backstage\Mails\Contracts\MailDriverContract;
 use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Enums\Provider;
 use Backstage\Mails\Enums\Provider;
 use Backstage\Mails\Models\Mail;
 use Illuminate\Http\Client\Response;

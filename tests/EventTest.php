@@ -5,7 +5,7 @@ use Backstage\Mails\Events\MailHardBounced;
 use Backstage\Mails\Models\Mail;
 use Illuminate\Support\Facades\Event;
 
-it('dispaches events when an mail is logged', function (): void {
+it('dispatches events when an mail is logged', function (): void {
     Event::fake([
         MailEventLogged::class,
         MailHardBounced::class,
