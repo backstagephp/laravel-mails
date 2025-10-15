@@ -11,7 +11,7 @@ class RegisterWebhooks
 {
     use AsAction, InteractsWithIO;
 
-    public function handle(string $provider, Factory $components)
+    public function handle(string $provider, Factory $components): void
     {
         MailProvider::with($provider)->registerWebhooks(
             components: $components
