@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.head_ref }}
 
@@ -19,6 +19,6 @@ jobs:
         uses: aglipanci/laravel-pint-action@2.1.0
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Fix styling
