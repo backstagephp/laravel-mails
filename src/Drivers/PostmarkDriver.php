@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\URL;
 use Backstage\Mails\Contracts\MailDriverContract;
 use Backstage\Mails\Enums\EventType;
 use Backstage\Mails\Enums\Provider;
+use Backstage\Mails\Models\Mail;
 
 class PostmarkDriver extends MailDriver implements MailDriverContract
 {
@@ -104,7 +105,7 @@ class PostmarkDriver extends MailDriver implements MailDriverContract
 
     public function attachUuidToMail(MessageSending $event, string $uuid): MessageSending
     {
-        $event->message->getHeaders()->addTextHeader('X-PM-Metadata-'.config('mails.headers.uuid'), $uuid);
+        $event->message->getHeaders()->addTextHeader('X-PM-Metadata-' . config('mails.headers.uuid'), $uuid);
 
         return $event;
     }
@@ -132,6 +133,29 @@ class PostmarkDriver extends MailDriver implements MailDriverContract
             EventType::OPENED->value => ['RecordType' => 'Open'],
             EventType::SOFT_BOUNCED->value => ['RecordType' => 'Bounce', 'Type' => 'SoftBounce'],
             EventType::UNSUBSCRIBED->value => ['RecordType' => 'SubscriptionChange'],
+
+            // Others
+            EventType::TRANSIENT->value => ['RecordType' => 'Transient'],
+            EventType::UNSUBSCRIBE->value => ['RecordType' => 'SubscriptionChange', 'Type' => 'Unsubscribe'],
+            EventType::SUBSCRIBE->value => ['RecordType' => 'SubscriptionChange', 'Type' => 'Subscribe'],
+            EventType::AUTO_RESPONDER->value => ['RecordType' => 'AutoResponder'],
+            EventType::ADDRESS_CHANGE->value => ['RecordType' => 'AddressChange'],
+            EventType::DNS_ERROR->value => ['RecordType' => 'DNSError'],
+            EventType::SPAM_NOTIFICATION->value => ['RecordType' => 'SpamNotification'],
+            EventType::OPEN_RELAY_TEST->value => ['RecordType' => 'OpenRelayTest'],
+            EventType::SOFT_BOUNCE->value => ['RecordType' => 'SoftBounce'],
+            EventType::VIRUS_NOTIFICATION->value => ['RecordType' => 'VirusNotification'],
+            EventType::CHALLENGE_VERIFICATION->value => ['RecordType' => 'ChallengeVerification'],
+            EventType::BAD_EMAIL_ADDRESS->value => ['RecordType' => 'BadEmailAddress'],
+            EventType::SPAM_COMPLAINT->value => ['RecordType' => 'SpamComplaint'],
+            EventType::MANUALLY_DEACTIVATED->value => ['RecordType' => 'ManuallyDeactivated'],
+            EventType::UNCONFIRMED->value => ['RecordType' => 'Unconfirmed'],
+            EventType::BLOCKED->value => ['RecordType' => 'Blocked'],
+            EventType::SMTP_API_ERROR->value => ['RecordType' => 'SMTPAPIError'],
+            EventType::INBOUND_ERROR->value => ['RecordType' => 'InboundError'],
+            EventType::DMARC_POLICY->value => ['RecordType' => 'DMARCPolicy'],
+            EventType::TEMPLATE_RENDERING_FAILED->value => ['RecordType' => 'TemplateRenderingFailed'],
+            EventType::UNKNOWN->value => ['RecordType' => 'Unknown'],
         ];
     }
 
@@ -158,8 +182,73 @@ class PostmarkDriver extends MailDriver implements MailDriverContract
             ])
             ->baseUrl('https://api.postmarkapp.com/');
 
-        return $client->post('message-streams/'.$stream_id.'/suppressions/delete', [
+        return $client->post('message-streams/' . $stream_id . '/suppressions/delete', [
             'Suppressions' => [['emailAddress' => $address]],
         ]);
+    }
+
+    public function transient(Mail $mail, string $timestamp): void
+    {
+        $this->softBounced($mail, $timestamp);
+    }
+
+    public function unsubscribe(Mail $mail, string $timestamp): void
+    {
+        $this->unsubscribed($mail, $timestamp);
+    }
+
+    public function dnsError(Mail $mail, string $timestamp): void
+    {
+        $this->softBounced($mail, $timestamp);
+    }
+
+    public function spamNotification(Mail $mail, string $timestamp): void
+    {
+        $this->complained($mail, $timestamp);
+    }
+
+    public function softBounce(Mail $mail, string $timestamp): void
+    {
+        $this->softBounced($mail, $timestamp);
+    }
+
+    public function virusNotification(Mail $mail, string $timestamp): void
+    {
+        $this->complained($mail, $timestamp);
+    }
+
+    public function challengeVerification(Mail $mail, string $timestamp): void
+    {
+        $this->softBounced($mail, $timestamp);
+    }
+
+    public function badEmailAddress(Mail $mail, string $timestamp): void
+    {
+        $this->hardBounced($mail, $timestamp);
+    }
+
+    public function spamComplaint(Mail $mail, string $timestamp): void
+    {
+        $this->complained($mail, $timestamp);
+    }
+
+    public function blocked(Mail $mail, string $timestamp): void
+    {
+        $this->hardBounced($mail, $timestamp);
+    }
+
+    public function smtpApiError(Mail $mail, string $timestamp): void
+    {
+        $this->hardBounced($mail, $timestamp);
+    }
+
+    public function dmarcPolicy(Mail $mail, string $timestamp): void
+    {
+        $this->hardBounced($mail, $timestamp);
+    }
+
+    public function templateRenderingFailed(Mail $mail, string $timestamp): void
+    {
+        $this->hardBounced($mail, $timestamp);
     }
 }

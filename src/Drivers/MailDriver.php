@@ -73,11 +73,11 @@ abstract class MailDriver
 
         $data = $this->getDataFromPayload($payload);
         $method = Str::camel($data['type']);
+        
+        // log mail event
+        $mail->events()->create($data);
 
         if (method_exists($this, $method)) {
-            // log mail event
-            $mail->events()->create($data);
-
             // update mail record with timestamp
             $this->{$method}($mail, $this->getTimestampFromPayload($payload));
         }
