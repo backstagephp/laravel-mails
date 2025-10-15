@@ -49,3 +49,6 @@ jobs:
 
       - name: Execute tests
         run: vendor/bin/pest --ci
+        env:
+          # Disable Ray to avoid type compatibility issues
+          RAY_DISABLED: true
