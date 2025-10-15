@@ -2,12 +2,6 @@
 
 namespace Backstage\Mails;
 
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Mail\Events\MessageSending;
-use Illuminate\Mail\Events\MessageSent;
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
-use SplFileInfo;
 use Backstage\Mails\Commands\CheckBounceRateCommand;
 use Backstage\Mails\Commands\MonitorMailCommand;
 use Backstage\Mails\Commands\PruneMailCommand;
@@ -25,6 +19,12 @@ use Backstage\Mails\Listeners\NotifyOnBounce;
 use Backstage\Mails\Listeners\StoreMailRelations;
 use Backstage\Mails\Listeners\UnsuppressEmailAddress;
 use Backstage\Mails\Managers\MailProviderManager;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Mail\Events\MessageSent;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
+use SplFileInfo;
 
 class MailsServiceProvider extends PackageServiceProvider
 {
@@ -43,7 +43,7 @@ class MailsServiceProvider extends PackageServiceProvider
 
     public function bootingPackage(): void
     {
-        $this->app->singleton(MailProviderContract::class, fn ($app) => new MailProviderManager($app));
+        $this->app->singleton(MailProviderContract::class, fn ($app): MailProviderManager => new MailProviderManager($app));
     }
 
     public function configurePackage(Package $package): void
@@ -69,7 +69,7 @@ class MailsServiceProvider extends PackageServiceProvider
     protected function getMigrations(): array
     {
         return collect(app(Filesystem::class)->files(__DIR__.'/../database/migrations'))
-            ->map(fn (SplFileInfo $file) => str_replace('.php.stub', '', $file->getBasename()))
+            ->map(fn (SplFileInfo $file): string => str_replace('.php.stub', '', $file->getBasename()))
             ->toArray();
     }
 }

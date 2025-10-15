@@ -2,8 +2,9 @@
 
 namespace Backstage\Mails\Contracts;
 
-use Illuminate\Mail\Events\MessageSending;
 use Backstage\Mails\Models\Mail;
+use Illuminate\Http\Client\Response;
+use Illuminate\Mail\Events\MessageSending;
 
 interface MailDriverContract
 {
@@ -11,7 +12,7 @@ interface MailDriverContract
 
     public function verifyWebhookSignature(array $payload): bool;
 
-    public function attachUuidToMail(MessageSending $event, string $uuid): MessageSending;
+    public function attachUuidToMail(MessageSending $messageSending, string $uuid): MessageSending;
 
     public function getUuidFromPayload(array $payload): ?string;
 
@@ -40,4 +41,6 @@ interface MailDriverContract
     public function softBounced(Mail $mail, string $timestamp): void;
 
     public function unsubscribed(Mail $mail, string $timestamp): void;
+
+    public function unsuppressEmailAddress(string $address, ?int $stream_id = null): Response;
 }

@@ -7,30 +7,30 @@ use Backstage\Mails\Facades\MailProvider;
 
 class LogMailEvent
 {
-    public function handle(MailEvent $event): void
+    public function handle(MailEvent $mailEvent): void
     {
-        $mail = MailProvider::with($event->provider)->getMailFromPayload($event->payload);
+        $mail = MailProvider::with($mailEvent->provider)->getMailFromPayload($mailEvent->payload);
 
         if (! $mail) {
             return;
         }
 
         if (config('mails.webhooks.queue')) {
-            $this->dispatch($event->provider, $event->payload);
+            $this->dispatch($mailEvent->provider, $mailEvent->payload);
 
             return;
         }
 
-        $this->record($event->provider, $event->payload);
+        $this->record($mailEvent->provider, $mailEvent->payload);
     }
 
-    private function record($provider, $payload): void
+    private function record(string $provider, array $payload): void
     {
         MailProvider::with($provider)
             ->logMailEvent($payload);
     }
 
-    private function dispatch($provider, $payload): void
+    private function dispatch(string $provider, array $payload): void
     {
         dispatch(fn () => $this->record($provider, $payload));
     }

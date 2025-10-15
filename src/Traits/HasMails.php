@@ -2,10 +2,10 @@
 
 namespace Backstage\Mails\Traits;
 
+use Backstage\Mails\Models\Mail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Backstage\Mails\Models\Mail;
 
 /**
  * @mixin Model

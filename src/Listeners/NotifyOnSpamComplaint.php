@@ -10,14 +10,14 @@ class NotifyOnSpamComplaint
 {
     use SendsNotifications;
 
-    public function handle(MailComplained $event): void
+    public function handle(MailComplained $mailComplained): void
     {
         if (! $channels = config('mails.events.complaint.notify')) {
             return;
         }
 
-        $notification = new SpamComplaintNotification($event->mailEvent->mail);
+        $spamComplaintNotification = new SpamComplaintNotification($mailComplained->mailEvent->mail);
 
-        $this->send($notification, $channels);
+        $this->send($spamComplaintNotification, $channels);
     }
 }

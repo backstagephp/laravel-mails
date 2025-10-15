@@ -1,13 +1,13 @@
 <?php
 
+use Backstage\Mails\Models\Mail as MailModel;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
-use Backstage\Mails\Models\Mail as MailModel;
 
 use function Pest\Laravel\assertDatabaseHas;
 
-it('can log sent mails', function () {
-    Mail::send([], [], function (Message $message) {
+it('can log sent mails', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')

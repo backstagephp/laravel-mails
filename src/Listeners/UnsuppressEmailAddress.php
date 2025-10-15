@@ -7,12 +7,12 @@ use Backstage\Mails\Facades\MailProvider;
 
 class UnsuppressEmailAddress
 {
-    public function handle(MailUnsuppressed $event): void
+    public function handle(MailUnsuppressed $mailUnsuppressed): void
     {
-        MailProvider::with(driver: $event->mailer)
+        MailProvider::with(driver: $mailUnsuppressed->mailer)
             ->unsuppressEmailAddress(
-                address: $event->emailAddress,
-                stream_id: $event->stream_id ?? null
+                address: $mailUnsuppressed->emailAddress,
+                stream_id: $mailUnsuppressed->stream_id ?? null
             );
     }
 }

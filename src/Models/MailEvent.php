@@ -2,15 +2,16 @@
 
 namespace Backstage\Mails\Models;
 
+use Backstage\Mails\Database\Factories\MailEventFactory;
+use Backstage\Mails\Enums\EventType;
+use Backstage\Mails\Events\MailEventLogged;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use Backstage\Mails\Database\Factories\MailEventFactory;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Events\MailEventLogged;
 
 /**
  * @property Mail $mail
@@ -27,6 +28,7 @@ use Backstage\Mails\Events\MailEventLogged;
  * @property string $tag
  * @property object $payload
  * @property Carbon $occurred_at
+ * @property string $eventClass
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -68,7 +70,7 @@ class MailEvent extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (MailEvent $mailEvent) {
+        static::creating(function (MailEvent $mailEvent): void {
             event(MailEventLogged::class, $mailEvent);
 
             $eventClass = $mailEvent->eventClass;
@@ -89,13 +91,13 @@ class MailEvent extends Model
         return $this->belongsTo(config('mails.models.mail'));
     }
 
-    public function scopeSuppressed(Builder $query): void
+    public function scopeSuppressed(Builder $builder): void
     {
-        $query->where('type', EventType::HARD_BOUNCED);
+        $builder->where('type', EventType::HARD_BOUNCED);
     }
 
-    protected function getEventClassAttribute(): string
+    protected function eventClass(): Attribute
     {
-        return 'Backstage\Mails\Events\Mail'.Str::studly($this->type->value);
+        return Attribute::make(get: fn (): string => 'Backstage\Mails\Events\Mail'.Str::studly($this->type->value));
     }
 }

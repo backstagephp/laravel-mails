@@ -6,11 +6,12 @@ use Backstage\Mails\Models\MailEvent;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\post;
 
-it('can receive incoming delivery webhook from resend', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming delivery webhook from resend', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('hey@danielhe4rt.dev')
             ->from('local@computer.nl')
             ->cc('az1ru@basementdevs.cc')
@@ -30,8 +31,8 @@ it('can receive incoming delivery webhook from resend', function () {
             'headers' => [
                 [
                     'name' => config('mails.headers.uuid'),
-                    'value' => $mail->uuid
-                ]
+                    'value' => $mail->uuid,
+                ],
             ],
             'from' => 'local@computer.nl',
             'subject' => 'Test',
@@ -47,8 +48,8 @@ it('can receive incoming delivery webhook from resend', function () {
     ]);
 });
 
-it('can receive incoming hard bounce webhook from resend', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming hard bounce webhook from resend', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('hey@danielhe4rt.dev')
             ->from('local@computer.nl')
             ->cc('az1ru@basementdevs.cc')
@@ -69,8 +70,8 @@ it('can receive incoming hard bounce webhook from resend', function () {
             'headers' => [
                 [
                     'name' => config('mails.headers.uuid'),
-                    'value' => $mail->uuid
-                ]
+                    'value' => $mail->uuid,
+                ],
             ],
             'subject' => 'Test',
             'to' => ['hey@danielhe4rt.com'],
@@ -85,8 +86,8 @@ it('can receive incoming hard bounce webhook from resend', function () {
     ]);
 });
 
-it('can receive incoming soft bounce webhook from resend', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming soft bounce webhook from resend', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('hey@danielhe4rt.dev')
             ->from('local@computer.nl')
             ->cc('az1ru@basementdevs.cc')
@@ -106,8 +107,8 @@ it('can receive incoming soft bounce webhook from resend', function () {
             'headers' => [
                 [
                     'name' => config('mails.headers.uuid'),
-                    'value' => $mail->uuid
-                ]
+                    'value' => $mail->uuid,
+                ],
             ],
             'from' => 'local@computer.nl',
             'subject' => 'Test',
@@ -123,8 +124,8 @@ it('can receive incoming soft bounce webhook from resend', function () {
     ]);
 });
 
-it('can receive incoming complaint webhook from resend', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming complaint webhook from resend', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('hey@danielhe4rt.dev')
             ->from('local@computer.nl')
             ->cc('az1ru@basementdevs.cc')
@@ -144,8 +145,8 @@ it('can receive incoming complaint webhook from resend', function () {
             'headers' => [
                 [
                     'name' => config('mails.headers.uuid'),
-                    'value' => $mail->uuid
-                ]
+                    'value' => $mail->uuid,
+                ],
             ],
             'from' => 'local@computer.nl',
             'subject' => 'Test',
@@ -161,8 +162,8 @@ it('can receive incoming complaint webhook from resend', function () {
     ]);
 });
 
-it('can receive incoming open webhook from resend', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming open webhook from resend', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('hey@danielhe4rt.dev')
             ->from('local@computer.nl')
             ->cc('az1ru@basementdevs.cc')
@@ -183,8 +184,8 @@ it('can receive incoming open webhook from resend', function () {
             'headers' => [
                 [
                     'name' => config('mails.headers.uuid'),
-                    'value' => $mail->uuid
-                ]
+                    'value' => $mail->uuid,
+                ],
             ],
             'subject' => 'Test',
             'to' => ['hey@danielhe4rt.com'],
@@ -199,8 +200,8 @@ it('can receive incoming open webhook from resend', function () {
     ]);
 });
 
-it('can receive incoming click webhook from resend', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming click webhook from resend', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('hey@danielhe4rt.dev')
             ->from('local@computer.nl')
             ->cc('az1ru@basementdevs.cc')
@@ -222,8 +223,8 @@ it('can receive incoming click webhook from resend', function () {
             'headers' => [
                 [
                     'name' => config('mails.headers.uuid'),
-                    'value' => $mail->uuid
-                ]
+                    'value' => $mail->uuid,
+                ],
             ],
             'to' => ['hey@danielhe4rt.com'],
             'cc' => ['az1ru@basementdevs.cc'],

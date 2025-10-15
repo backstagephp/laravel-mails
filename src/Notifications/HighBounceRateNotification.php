@@ -2,6 +2,7 @@
 
 namespace Backstage\Mails\Notifications;
 
+use Backstage\Mails\Traits\HasDynamicDrivers;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -9,26 +10,16 @@ use Illuminate\Notifications\Messages\SlackMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Discord\DiscordMessage;
 use NotificationChannels\Telegram\TelegramMessage;
-use Backstage\Mails\Traits\HasDynamicDrivers;
 
 class HighBounceRateNotification extends Notification implements ShouldQueue
 {
     use HasDynamicDrivers, Queueable;
 
-    protected $rate;
-
-    protected $threshold;
-
     /**
      * @param  float|int  $rate
      * @param  float|int  $threshold
      */
-    public function __construct($rate, $threshold)
-    {
-        $this->rate = $rate;
-
-        $this->threshold = $threshold;
-    }
+    public function __construct(protected $rate, protected $threshold) {}
 
     public function getTitle(): string
     {

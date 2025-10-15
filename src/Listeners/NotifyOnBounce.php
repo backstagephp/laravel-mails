@@ -10,14 +10,14 @@ class NotifyOnBounce
 {
     use SendsNotifications;
 
-    public function handle(MailHardBounced $event): void
+    public function handle(MailHardBounced $mailHardBounced): void
     {
         if (! $channels = config('mails.events.bounce.notify')) {
             return;
         }
 
-        $notification = new BounceNotification($event->mailEvent->mail);
+        $bounceNotification = new BounceNotification($mailHardBounced->mailEvent->mail);
 
-        $this->send($notification, $channels);
+        $this->send($bounceNotification, $channels);
     }
 }

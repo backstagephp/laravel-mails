@@ -2,8 +2,8 @@
 
 namespace Backstage\Mails\Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Backstage\Mails\Models\MailEvent;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MailEventFactory extends Factory
 {

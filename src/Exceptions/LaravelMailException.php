@@ -8,6 +8,6 @@ class LaravelMailException extends Exception
 {
     public static function unknownEventType(): self
     {
-        return new self("Unknown event type. Please check the event mapping in your mail driver.");
+        return new self('Unknown event type. Please check the event mapping in your mail driver.');
     }
 }

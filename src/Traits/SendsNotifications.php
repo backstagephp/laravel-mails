@@ -20,8 +20,8 @@ trait SendsNotifications
                 continue;
             }
 
-            foreach ($accounts as $route) {
-                Notifications::route($channel, $route)->notify(
+            foreach ($accounts as $account) {
+                Notifications::route($channel, $account)->notify(
                     $this->prepareNotification($notification, $channel)
                 );
             }

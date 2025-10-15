@@ -2,13 +2,14 @@
 
 namespace Backstage\Mails\Actions;
 
+use Backstage\Mails\Enums\Provider;
+use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Shared\AsAction;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Mime\Address;
-use Backstage\Mails\Enums\Provider;
-use Backstage\Mails\Shared\AsAction;
 
 class LogMail
 {
@@ -39,7 +40,7 @@ class LogMail
     }
 
     /**
-     * @return \Backstage\Mails\Models\Mail
+     * @return Mail
      */
     public function newMailModelInstance()
     {
@@ -87,7 +88,7 @@ class LogMail
         }
 
         if (null !== $messageStream = $event->message->getHeaders()->get('x-pm-message-stream')) {
-            return $messageStream;
+            return $messageStream->getBody();
         }
 
         return config('mail.mailers.postmark.message_stream_id', 'outbound');
@@ -122,21 +123,21 @@ class LogMail
     protected function getAddressesValue(array $address): ?Collection
     {
         $addresses = collect($address)
-            ->flatMap(fn (Address $address) => [$address->getAddress() => $address->getName() === '' ? null : $address->getName()]);
+            ->flatMap(fn (Address $address): array => [$address->getAddress() => $address->getName() === '' ? null : $address->getName()]);
 
         return $addresses->count() > 0 ? $addresses : null;
     }
 
     public function collectAttachments($mail, $attachments): void
     {
-        collect($attachments)->each(function ($attachment) use ($mail) {
+        collect($attachments)->each(function ($attachment) use ($mail): void {
             $attachmentModel = $mail->attachments()->create([
                 'disk' => config('mails.logging.attachments.disk'),
                 'uuid' => $attachment->getContentId(),
                 'filename' => $attachment->getFilename(),
                 'mime' => $attachment->getContentType(),
-                'inline' => ! str_contains($attachment->getFilename() ?: '', '.'), // workaround, because disposition is a private property
-                'size' => strlen($attachment->getBody()),
+                'inline' => ! str_contains((string) $attachment->getFilename() !== '' && (string) $attachment->getFilename() !== '0' ? (string) $attachment->getFilename() : '', '.'), // workaround, because disposition is a private property
+                'size' => strlen((string) $attachment->getBody()),
             ]);
 
             $this->saveAttachment($attachmentModel, $attachment);

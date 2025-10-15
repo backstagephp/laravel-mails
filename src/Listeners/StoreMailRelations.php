@@ -8,9 +8,9 @@ use Symfony\Component\Mime\Email;
 
 class StoreMailRelations
 {
-    public function handle(MessageSending $event): void
+    public function handle(MessageSending $messageSending): void
     {
-        $message = $event->message;
+        $message = $messageSending->message;
 
         if (! $this->shouldAssociateModels($message)) {
             return;
@@ -29,37 +29,37 @@ class StoreMailRelations
         }
     }
 
-    protected function shouldAssociateModels(Email $message): bool
+    protected function shouldAssociateModels(Email $email): bool
     {
-        return $message->getHeaders()->has(
+        return $email->getHeaders()->has(
             $this->getAssociatedHeaderName(),
         );
     }
 
-    protected function getAssociatedModels(Email $message): array|false
+    protected function getAssociatedModels(Email $email): array|false
     {
         $encrypted = $this->getHeaderBody(
-            $message,
+            $email,
             $this->getAssociatedHeaderName(),
         );
 
         $payload = decrypt($encrypted);
 
-        return json_decode($payload, true);
+        return json_decode((string) $payload, true);
     }
 
-    protected function getMailModel(Email $message): Model
+    protected function getMailModel(Email $email): Model
     {
-        $uuid = $this->getHeaderBody($message, config('mails.headers.uuid'));
+        $uuid = $this->getHeaderBody($email, config('mails.headers.uuid'));
 
         $model = config('mails.models.mail');
 
         return $model::query()->where('uuid', $uuid)->limit(1)->first();
     }
 
-    protected function getHeaderBody(Email $message, string $header): mixed
+    protected function getHeaderBody(Email $email, string $header): mixed
     {
-        return $message->getHeaders()->getHeaderBody($header);
+        return $email->getHeaders()->getHeaderBody($header);
     }
 
     protected function getAssociatedHeaderName(): string

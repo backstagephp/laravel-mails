@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Notification;
 use Backstage\Mails\Models\Mail;
 use Backstage\Mails\Notifications\BounceNotification;
+use Illuminate\Support\Facades\Notification;
 
 beforeEach(fn () => config([
     'mails.events.bounce.notify' => [
@@ -13,7 +13,7 @@ beforeEach(fn () => config([
     ],
 ]));
 
-it('will send notification on bounce', function () {
+it('will send notification on bounce', function (): void {
     Notification::fake();
 
     Mail::factory()

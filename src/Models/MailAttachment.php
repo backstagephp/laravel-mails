@@ -2,12 +2,13 @@
 
 namespace Backstage\Mails\Models;
 
+use Backstage\Mails\Database\Factories\MailAttachmentFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
-use Backstage\Mails\Database\Factories\MailAttachmentFactory;
 
 /**
  * @property-read string $disk
@@ -17,6 +18,8 @@ use Backstage\Mails\Database\Factories\MailAttachmentFactory;
  * @property-read bool $inline
  * @property-read int $size
  * @property-read Mail $mail
+ * @property-read string $storagePath
+ * @property-read string $fileData
  */
 class MailAttachment extends Model
 {
@@ -55,14 +58,14 @@ class MailAttachment extends Model
         return $this->belongsTo(config('mails.models.mail'));
     }
 
-    public function getStoragePathAttribute(): string
+    protected function storagePath(): Attribute
     {
-        return rtrim(config('mails.logging.attachments.root'), '/').'/'.$this->getKey().'/'.$this->filename;
+        return Attribute::make(get: fn (): string => rtrim((string) config('mails.logging.attachments.root'), '/').'/'.$this->getKey().'/'.$this->filename);
     }
 
-    public function getFileDataAttribute(): string
+    protected function fileData(): Attribute
     {
-        return Storage::disk($this->disk)->get($this->storagePath);
+        return Attribute::make(get: fn () => Storage::disk($this->disk)->get($this->storagePath));
     }
 
     public function downloadFileFromStorage(?string $filename = null): string
@@ -71,7 +74,7 @@ class MailAttachment extends Model
             ->download(
                 $this->storagePath,
                 $filename ?? $this->filename, [
-                'Content-Type' => $this->mime,
-            ]);
+                    'Content-Type' => $this->mime,
+                ]);
     }
 }

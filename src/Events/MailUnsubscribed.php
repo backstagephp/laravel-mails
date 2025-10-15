@@ -2,10 +2,10 @@
 
 namespace Backstage\Mails\Events;
 
+use Backstage\Mails\Models\MailEvent;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Backstage\Mails\Models\MailEvent;
 
 class MailUnsubscribed
 {

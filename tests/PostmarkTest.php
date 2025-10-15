@@ -1,18 +1,18 @@
 <?php
 
-use Illuminate\Mail\Message;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\URL;
 use Backstage\Mails\Enums\EventType;
 use Backstage\Mails\Enums\Provider;
 use Backstage\Mails\Models\Mail as MailModel;
 use Backstage\Mails\Models\MailEvent;
+use Illuminate\Mail\Message;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\post;
 
-it('can receive incoming delivery webhook from postmark', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming delivery webhook from postmark', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -43,8 +43,8 @@ it('can receive incoming delivery webhook from postmark', function () {
     ]);
 });
 
-it('can receive incoming hard bounce webhook from postmark', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming hard bounce webhook from postmark', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -86,8 +86,8 @@ it('can receive incoming hard bounce webhook from postmark', function () {
     ]);
 });
 
-it('can receive incoming soft bounce webhook from postmark', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming soft bounce webhook from postmark', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -129,8 +129,8 @@ it('can receive incoming soft bounce webhook from postmark', function () {
     ]);
 });
 
-it('can receive incoming complaint webhook from postmark', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming complaint webhook from postmark', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -172,8 +172,8 @@ it('can receive incoming complaint webhook from postmark', function () {
     ]);
 });
 
-it('can receive incoming open webhook from postmark', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming open webhook from postmark', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -226,8 +226,8 @@ it('can receive incoming open webhook from postmark', function () {
     ]);
 });
 
-it('can receive incoming click webhook from postmark', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming click webhook from postmark', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -281,8 +281,8 @@ it('can receive incoming click webhook from postmark', function () {
     ]);
 });
 
-it('can receive incoming subscription change webhook from postmark', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming subscription change webhook from postmark', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')

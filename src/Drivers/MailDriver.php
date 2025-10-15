@@ -3,9 +3,8 @@
 namespace Backstage\Mails\Drivers;
 
 use Backstage\Mails\Exceptions\LaravelMailException;
-use Exception;
-use Illuminate\Support\Str;
 use Backstage\Mails\Models\Mail;
+use Illuminate\Support\Str;
 
 abstract class MailDriver
 {
@@ -39,8 +38,8 @@ abstract class MailDriver
     public function getDataFromPayload(array $payload): array
     {
         return collect($this->dataMapping())
-            ->mapWithKeys(fn ($value, $key) => [
-                $key => is_array($v = data_get($payload, $value)) ? json_encode($v) : $v
+            ->mapWithKeys(fn ($value, $key): array => [
+                $key => is_array($v = data_get($payload, $value)) ? json_encode($v) : $v,
             ])
             ->filter()
             ->merge([
@@ -54,8 +53,7 @@ abstract class MailDriver
     public function getEventFromPayload(array $payload): string
     {
         foreach ($this->eventMapping() as $event => $mapping) {
-
-            if (collect($mapping)->every(fn ($value, $key) => data_get($payload, $key) === $value)) {
+            if (collect($mapping)->every(fn ($value, $key): bool => data_get($payload, $key) === $value)) {
                 return $event;
             }
         }
@@ -63,7 +61,7 @@ abstract class MailDriver
         throw LaravelMailException::unknownEventType();
     }
 
-    public function logMailEvent($payload): void
+    public function logMailEvent(array $payload): void
     {
         $mail = $this->getMailFromPayload($payload);
 
@@ -73,11 +71,11 @@ abstract class MailDriver
 
         $data = $this->getDataFromPayload($payload);
         $method = Str::camel($data['type']);
-        
-        // log mail event
-        $mail->events()->create($data);
 
         if (method_exists($this, $method)) {
+            // log mail event
+            $mail->events()->create($data);
+
             // update mail record with timestamp
             $this->{$method}($mail, $this->getTimestampFromPayload($payload));
         }

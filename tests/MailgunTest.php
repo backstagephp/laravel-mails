@@ -1,18 +1,18 @@
 <?php
 
-use Illuminate\Mail\Message;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\URL;
 use Backstage\Mails\Enums\EventType;
 use Backstage\Mails\Enums\Provider;
 use Backstage\Mails\Models\Mail as MailModel;
 use Backstage\Mails\Models\MailEvent;
+use Illuminate\Mail\Message;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\post;
 
-it('can receive incoming delivery webhook from mailgun', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming delivery webhook from mailgun', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -77,8 +77,8 @@ it('can receive incoming delivery webhook from mailgun', function () {
     ]);
 });
 
-it('can receive incoming accept webhook from mailgun', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming accept webhook from mailgun', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -135,8 +135,8 @@ it('can receive incoming accept webhook from mailgun', function () {
     ]);
 });
 
-it('can receive incoming hard bounce webhook from mailgun', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming hard bounce webhook from mailgun', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -194,8 +194,8 @@ it('can receive incoming hard bounce webhook from mailgun', function () {
     ]);
 });
 
-it('can receive incoming soft bounce webhook from mailgun', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming soft bounce webhook from mailgun', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -253,8 +253,8 @@ it('can receive incoming soft bounce webhook from mailgun', function () {
     ]);
 });
 
-it('can receive incoming complaint webhook from mailgun', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming complaint webhook from mailgun', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -310,8 +310,8 @@ it('can receive incoming complaint webhook from mailgun', function () {
     ]);
 });
 
-it('can receive incoming open webhook from mailgun', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming open webhook from mailgun', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -371,8 +371,8 @@ it('can receive incoming open webhook from mailgun', function () {
     ]);
 });
 
-it('can receive incoming click webhook from mailgun', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming click webhook from mailgun', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
@@ -436,8 +436,8 @@ it('can receive incoming click webhook from mailgun', function () {
     ]);
 });
 
-it('can receive incoming unsubscribe webhook from mailgun', function () {
-    Mail::send([], [], function (Message $message) {
+it('can receive incoming unsubscribe webhook from mailgun', function (): void {
+    Mail::send([], [], function (Message $message): void {
         $message->to('mark@vormkracht10.nl')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')

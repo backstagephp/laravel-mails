@@ -20,9 +20,9 @@ class SendHighBounceRateNotifications
             return false;
         }
 
-        $notification = new HighBounceRateNotification($rate, $threshold);
+        $highBounceRateNotification = new HighBounceRateNotification($rate, $threshold);
 
-        $this->send($notification, $channels);
+        $this->send($highBounceRateNotification, $channels);
 
         return true;
     }

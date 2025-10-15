@@ -2,8 +2,8 @@
 
 namespace Backstage\Mails\Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Backstage\Mails\Models\Mail;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MailFactory extends Factory
 {

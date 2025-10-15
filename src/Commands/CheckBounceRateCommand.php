@@ -2,9 +2,9 @@
 
 namespace Backstage\Mails\Commands;
 
+use Backstage\Mails\Actions\SendHighBounceRateNotifications;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
-use Backstage\Mails\Actions\SendHighBounceRateNotifications;
 
 class CheckBounceRateCommand extends Command
 {

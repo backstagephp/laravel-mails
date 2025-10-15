@@ -4,6 +4,7 @@ namespace Backstage\Mails\Drivers;
 
 use Backstage\Mails\Contracts\MailDriverContract;
 use Backstage\Mails\Enums\EventType;
+use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 
 class ResendDriver extends MailDriver implements MailDriverContract
@@ -11,7 +12,7 @@ class ResendDriver extends MailDriver implements MailDriverContract
     public function registerWebhooks($components): void
     {
         $components->warn("Resend doesn't allow registering webhooks via the API. ");
-        $components->info("Please register your webhooks manually in the Resend dashboard.");
+        $components->info('Please register your webhooks manually in the Resend dashboard.');
     }
 
     public function verifyWebhookSignature(array $payload): bool
@@ -53,10 +54,16 @@ class ResendDriver extends MailDriver implements MailDriverContract
         ];
     }
 
-    public function attachUuidToMail(MessageSending $event, string $uuid): MessageSending
+    public function attachUuidToMail(MessageSending $messageSending, string $uuid): MessageSending
     {
-        $event->message->getHeaders()->addTextHeader(config('mails.headers.uuid'), $uuid);
+        $messageSending->message->getHeaders()->addTextHeader(config('mails.headers.uuid'), $uuid);
 
-        return $event;
+        return $messageSending;
+    }
+
+    public function unsuppressEmailAddress(string $address, ?int $stream_id = null): Response
+    {
+        // Resend doesn't support unsuppressing email addresses via API
+        return new Response(new \GuzzleHttp\Psr7\Response(200, [], 'Not supported'));
     }
 }

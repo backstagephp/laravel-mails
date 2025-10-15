@@ -2,13 +2,13 @@
 
 namespace Backstage\Mails\Listeners;
 
-use Illuminate\Mail\Events\MessageSending;
 use Backstage\Mails\Actions\LogMail;
+use Illuminate\Mail\Events\MessageSending;
 
 class LogSendingMail
 {
-    public function handle(MessageSending $event): void
+    public function handle(MessageSending $messageSending): void
     {
-        (new LogMail)($event);
+        (new LogMail)($messageSending);
     }
 }

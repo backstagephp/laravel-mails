@@ -2,8 +2,8 @@
 
 namespace Backstage\Mails\Commands;
 
-use Illuminate\Console\Command;
 use Backstage\Mails\Models\Mail;
+use Illuminate\Console\Command;
 
 class PruneMailCommand extends Command
 {

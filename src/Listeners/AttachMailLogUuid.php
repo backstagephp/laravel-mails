@@ -2,13 +2,13 @@
 
 namespace Backstage\Mails\Listeners;
 
-use Illuminate\Mail\Events\MessageSending;
 use Backstage\Mails\Actions\AttachUuid;
+use Illuminate\Mail\Events\MessageSending;
 
 class AttachMailLogUuid
 {
-    public function handle(MessageSending $event): void
+    public function handle(MessageSending $messageSending): void
     {
-        (new AttachUuid)($event);
+        (new AttachUuid)($messageSending);
     }
 }

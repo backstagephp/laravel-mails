@@ -2,9 +2,9 @@
 
 namespace Backstage\Mails\Commands;
 
+use Backstage\Mails\Actions\RegisterWebhooks;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
-use Backstage\Mails\Actions\RegisterWebhooks;
 
 class WebhooksMailCommand extends Command implements PromptsForMissingInput
 {

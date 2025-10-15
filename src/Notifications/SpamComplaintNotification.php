@@ -2,25 +2,20 @@
 
 namespace Backstage\Mails\Notifications;
 
+use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Traits\HasDynamicDrivers;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\SlackMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Discord\DiscordMessage;
 use NotificationChannels\Telegram\TelegramMessage;
-use Backstage\Mails\Models\Mail;
-use Backstage\Mails\Traits\HasDynamicDrivers;
 
 class SpamComplaintNotification extends Notification implements ShouldQueue
 {
     use HasDynamicDrivers, Queueable;
 
-    protected Mail $mail;
-
-    public function __construct(Mail $mail)
-    {
-        $this->mail = $mail;
-    }
+    public function __construct(protected Mail $mail) {}
 
     public function getTitle(): string
     {

@@ -2,33 +2,33 @@
 
 namespace Backstage\Mails\Actions;
 
-use Illuminate\Mail\Events\MessageSending;
-use Illuminate\Support\Str;
 use Backstage\Mails\Facades\MailProvider;
 use Backstage\Mails\Shared\AsAction;
+use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Support\Str;
 
 class AttachUuid
 {
     use AsAction;
 
-    public function handle(MessageSending $event): void
+    public function handle(MessageSending $messageSending): MessageSending
     {
-        $provider = $this->getProvider($event);
+        $provider = $this->getProvider($messageSending);
 
         if (! $this->shouldTrackMails($provider)) {
-            return;
+            return $messageSending;
         }
 
         $uuid = Str::uuid()->toString();
 
-        $event->message->getHeaders()->addTextHeader(config('mails.headers.uuid'), $uuid);
+        $messageSending->message->getHeaders()->addTextHeader(config('mails.headers.uuid'), $uuid);
 
-        $event = MailProvider::with($provider)->attachUuidToMail($event, $uuid);
+        return MailProvider::with($provider)->attachUuidToMail($messageSending, $uuid);
     }
 
-    public function getProvider(MessageSending $event): string
+    public function getProvider(MessageSending $messageSending): string
     {
-        return config('mail.mailers.'.$event->data['mailer'].'.transport') ?? $event->data['mailer'];
+        return config('mail.mailers.'.$messageSending->data['mailer'].'.transport') ?? $messageSending->data['mailer'];
     }
 
     public function shouldTrackMails(string $provider): bool
@@ -44,11 +44,11 @@ class AttachUuid
 
     public function trackingEnabled(): bool
     {
-        return (bool) config('mails.logging.tracking.bounces') === true ||
-            (bool) config('mails.logging.tracking.clicks') === true ||
-            (bool) config('mails.logging.tracking.complaints') === true ||
-            (bool) config('mails.logging.tracking.deliveries') === true ||
-            (bool) config('mails.logging.tracking.opens') === true ||
-            (bool) config('mails.logging.tracking.unsubscribes') === true;
+        return (bool) config('mails.logging.tracking.bounces') ||
+            (bool) config('mails.logging.tracking.clicks') ||
+            (bool) config('mails.logging.tracking.complaints') ||
+            (bool) config('mails.logging.tracking.deliveries') ||
+            (bool) config('mails.logging.tracking.opens') ||
+            (bool) config('mails.logging.tracking.unsubscribes');
     }
 }

@@ -2,10 +2,10 @@
 
 namespace Backstage\Mails\Managers;
 
-use Illuminate\Support\Manager;
 use Backstage\Mails\Drivers\MailgunDriver;
 use Backstage\Mails\Drivers\PostmarkDriver;
 use Backstage\Mails\Drivers\ResendDriver;
+use Illuminate\Support\Manager;
 
 class MailProviderManager extends Manager
 {

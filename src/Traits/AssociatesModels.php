@@ -2,12 +2,13 @@
 
 namespace Backstage\Mails\Traits;
 
+use Backstage\Mails\Contracts\HasAssociatedMails;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Symfony\Component\Mime\Email;
-use Backstage\Mails\Contracts\HasAssociatedMails;
+use Symfony\Component\Mime\Header\Headers;
 
 /**
  * @mixin Mailable
@@ -32,7 +33,7 @@ trait AssociatesModels
     {
         $header = $this->getEncryptedAssociatedModelsHeader($models);
 
-        $this->withSymfonyMessage(fn (Email $message) => $message->getHeaders()->addTextHeader(
+        $this->withSymfonyMessage(fn (Email $email): Headers => $email->getHeaders()->addTextHeader(
             config('mails.headers.associate'),
             $header,
         ));

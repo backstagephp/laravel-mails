@@ -2,10 +2,10 @@
 
 namespace Backstage\Mails\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Backstage\Mails\Jobs\ResendMailJob;
 use Backstage\Mails\Models\Mail;
+use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\text;
@@ -41,26 +41,26 @@ class ResendMailCommand extends Command implements PromptsForMissingInput
 
     protected function promptEmailInputs(Mail $mail): array
     {
-        $to = implode(',', $this->argument('to')) ?: text(
+        $to = in_array(implode(',', $this->argument('to')), ['', '0'], true) ? text(
             label: 'What email address do you want to send the mail to?',
             placeholder: 'test@example.com',
-        );
+        ) : implode(',', $this->argument('to'));
 
-        $cc = implode(',', $this->option('cc')) ?: text(
+        $cc = in_array(implode(',', $this->option('cc')), ['', '0'], true) ? text(
             label: 'What email address should be included in the cc?',
             placeholder: 'test@example.com',
-        );
+        ) : implode(',', $this->option('cc'));
 
-        $bcc = implode(',', $this->option('bcc')) ?: text(
+        $bcc = in_array(implode(',', $this->option('bcc')), ['', '0'], true) ? text(
             label: 'What email address should be included in the bcc?',
             placeholder: 'test@example.com',
-        );
+        ) : implode(',', $this->option('bcc'));
 
         foreach ([&$to, &$cc, &$bcc] as &$input) {
-            $input = array_filter(array_map(fn ($s) => trim($s), explode(' ', str_replace([',', ';'], ' ', $input))));
+            $input = array_filter(array_map(fn ($s): string => trim($s), explode(' ', str_replace([',', ';'], ' ', $input))));
         }
 
-        return [$to ?: $mail->to, $cc ?: $mail->cc ?? [], $bcc ?: $mail->bcc ?? []];
+        return [$to !== '' && $to !== '0' ? $to : $mail->to, $cc !== '' && $cc !== '0' ? $cc : $mail->cc ?? [], $bcc !== '' && $bcc !== '0' ? $bcc : $mail->bcc ?? []];
     }
 
     protected function promptForMissingArgumentsUsing()

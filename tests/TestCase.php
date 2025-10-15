@@ -5,12 +5,12 @@ namespace Backstage\Mails\Tests;
 use Backstage\Mails\MailsServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Foundation\Application;
 use NotificationChannels\Discord\DiscordServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
-
     protected static array $migrations = [];
 
     protected function setUp(): void
@@ -18,7 +18,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn(string $modelName) => 'Backstage\\Mails\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
+            fn (string $modelName): string => 'Backstage\\Mails\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
 
         $this->loadMigrations();
@@ -35,9 +35,9 @@ class TestCase extends Orchestra
     /**
      * Set up the environment for testing.
      *
-     * @param \Illuminate\Foundation\Application $app
+     * @param  Application  $app
      */
-    public function getEnvironmentSetUp($app)
+    public function getEnvironmentSetUp($app): void
     {
         $app['config']->set('database.default', 'sqlite');
         $app['config']->set('database.connections.sqlite', [
@@ -53,21 +53,19 @@ class TestCase extends Orchestra
      */
     protected function loadMigrations(): void
     {
-        $filesystem = new Filesystem();
-        $migrationFiles = $filesystem->files(__DIR__ . '/../database/migrations/');
+        $filesystem = new Filesystem;
+        $migrationFiles = $filesystem->files(__DIR__.'/../database/migrations/');
 
         // Sorting to ensure migrations run in the correct order
-        usort($migrationFiles, function ($a, $b) {
-            return strcmp($a->getFilename(), $b->getFilename());
-        });
+        usort($migrationFiles, fn ($a, $b): int => strcmp((string) $a->getFilename(), (string) $b->getFilename()));
 
-        foreach ($migrationFiles as $file) {
+        foreach ($migrationFiles as $migrationFile) {
             // Skip if not a stub file
-            if ($file->getExtension() !== 'stub') {
+            if ($migrationFile->getExtension() !== 'stub') {
                 continue;
             }
 
-            $migration = include $file->getPathname();
+            $migration = include $migrationFile->getPathname();
             $migration->up();
         }
     }

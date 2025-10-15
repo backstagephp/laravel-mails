@@ -2,8 +2,8 @@
 
 namespace Backstage\Mails\Commands;
 
-use Illuminate\Console\Command;
 use Backstage\Mails\Models\Mail;
+use Illuminate\Console\Command;
 
 class MonitorMailCommand extends Command
 {
@@ -13,17 +13,15 @@ class MonitorMailCommand extends Command
 
     public function handle(): int
     {
-        if (null !== $bounceRateTreshold = config('mails.events.bouncerate.treshold')) {
-            if ($this->getBounceRate() >= $bounceRateTreshold) {
-                // TODO: notify
-            }
+        if (null !== ($bounceRateTreshold = config('mails.events.bouncerate.treshold')) && $this->getBounceRate() >= $bounceRateTreshold) {
+            // TODO: notify
+
         }
 
-        if (null !== $deliveryRateTreshold = config('mails.events.deliveryrate.treshold')) {
+        if (null !== ($deliveryRateTreshold = config('mails.events.deliveryrate.treshold')) && $this->getDeliveryRate() <= $deliveryRateTreshold) {
 
-            if ($this->getDeliveryRate() <= $deliveryRateTreshold) {
-                // TODO: notify
-            }
+            // TODO: notify
+
         }
 
         return self::SUCCESS;

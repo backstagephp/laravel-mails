@@ -2,13 +2,13 @@
 
 namespace Backstage\Mails\Drivers;
 
+use Backstage\Mails\Contracts\MailDriverContract;
+use Backstage\Mails\Enums\EventType;
+use Backstage\Mails\Enums\Provider;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
-use Backstage\Mails\Contracts\MailDriverContract;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Enums\Provider;
 
 class MailgunDriver extends MailDriver implements MailDriverContract
 {
@@ -83,7 +83,7 @@ class MailgunDriver extends MailDriver implements MailDriverContract
             return false;
         }
 
-        $hmac = hash_hmac('sha256', $payload['signature']['timestamp'].$payload['signature']['token'], config('services.mailgun.webhook_signing_key'));
+        $hmac = hash_hmac('sha256', $payload['signature']['timestamp'].$payload['signature']['token'], (string) config('services.mailgun.webhook_signing_key'));
 
         if (function_exists('hash_equals')) {
             return hash_equals($hmac, $payload['signature']['signature']);
@@ -92,11 +92,11 @@ class MailgunDriver extends MailDriver implements MailDriverContract
         return $hmac === $payload['signature']['signature'];
     }
 
-    public function attachUuidToMail(MessageSending $event, string $uuid): MessageSending
+    public function attachUuidToMail(MessageSending $messageSending, string $uuid): MessageSending
     {
-        $event->message->getHeaders()->addTextHeader('X-Mailgun-Variables', json_encode([config('mails.headers.uuid') => $uuid]));
+        $messageSending->message->getHeaders()->addTextHeader('X-Mailgun-Variables', json_encode([config('mails.headers.uuid') => $uuid]));
 
-        return $event;
+        return $messageSending;
     }
 
     public function getUuidFromPayload(array $payload): ?string
@@ -140,10 +140,10 @@ class MailgunDriver extends MailDriver implements MailDriverContract
 
     public function unsuppressEmailAddress(string $address, ?int $stream_id = null): Response
     {
-        $client = Http::asJson()
+        $pendingRequest = Http::asJson()
             ->withBasicAuth('api', config('services.mailgun.secret'))
             ->baseUrl(config('services.mailgun.endpoint').'/v3/');
 
-        return $client->delete(config('services.mailgun.domain').'/unsubscribes/'.$address);
+        return $pendingRequest->delete(config('services.mailgun.domain').'/unsubscribes/'.$address);
     }
 }

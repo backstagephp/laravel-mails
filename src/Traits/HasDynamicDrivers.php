@@ -2,6 +2,9 @@
 
 namespace Backstage\Mails\Traits;
 
+use Illuminate\Notifications\Channels\MailChannel;
+use NotificationChannels\Discord\DiscordChannel;
+
 trait HasDynamicDrivers
 {
     protected array $drivers = [];
@@ -23,13 +26,11 @@ trait HasDynamicDrivers
         }
 
         $via = [
-            'discord' => \NotificationChannels\Discord\DiscordChannel::class,
-            'mail' => \Illuminate\Notifications\Channels\MailChannel::class,
+            'discord' => DiscordChannel::class,
+            'mail' => MailChannel::class,
         ];
 
-        $drivers = array_map(function ($driver) use ($via) {
-            return $via[$driver];
-        }, $drivers);
+        $drivers = array_map(fn ($driver): string => $via[$driver], $drivers);
 
         $this->drivers = $drivers;
 

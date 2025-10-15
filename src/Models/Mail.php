@@ -2,15 +2,16 @@
 
 namespace Backstage\Mails\Models;
 
+use Backstage\Mails\Database\Factories\MailFactory;
+use Backstage\Mails\Events\MailLogged;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Backstage\Mails\Database\Factories\MailFactory;
-use Backstage\Mails\Events\MailLogged;
 
 /**
  * @property-read string $uuid
@@ -116,7 +117,7 @@ class Mail extends Model
 
     protected static function booted(): void
     {
-        static::created(function (Mail $mail) {
+        static::created(function (Mail $mail): void {
             event(MailLogged::class, $mail);
         });
     }
@@ -143,76 +144,88 @@ class Mail extends Model
         return $this->hasMany(config('mails.models.event'))->orderBy('occurred_at', 'desc');
     }
 
-    public function scopeResent(Builder $query): Builder
+    public function scopeResent(Builder $builder): Builder
     {
-        return $query->whereNotNull('resent_at');
+        return $builder->whereNotNull('resent_at');
     }
 
-    public function scopeDelivered(Builder $query): Builder
+    public function scopeDelivered(Builder $builder): Builder
     {
-        return $query->whereNotNull('delivered_at');
+        return $builder->whereNotNull('delivered_at');
     }
 
-    public function scopeClicked(Builder $query): Builder
+    public function scopeClicked(Builder $builder): Builder
     {
-        return $query->whereNotNull('last_clicked_at');
+        return $builder->whereNotNull('last_clicked_at');
     }
 
-    public function scopeOpened(Builder $query): Builder
+    public function scopeOpened(Builder $builder): Builder
     {
-        return $query->whereNotNull('last_opened_at');
+        return $builder->whereNotNull('last_opened_at');
     }
 
-    public function scopeComplained(Builder $query): Builder
+    public function scopeComplained(Builder $builder): Builder
     {
-        return $query->whereNotNull('complained_at');
+        return $builder->whereNotNull('complained_at');
     }
 
-    public function scopeSoftBounced(Builder $query): Builder
+    public function scopeSoftBounced(Builder $builder): Builder
     {
-        return $query->whereNotNull('soft_bounced_at');
+        return $builder->whereNotNull('soft_bounced_at');
     }
 
-    public function scopeHardBounced(Builder $query): Builder
+    public function scopeHardBounced(Builder $builder): Builder
     {
-        return $query->whereNotNull('hard_bounced_at');
+        return $builder->whereNotNull('hard_bounced_at');
     }
 
-    public function scopeBounced(Builder $query): Builder
+    public function scopeBounced(Builder $builder): Builder
     {
-        return $query->where(fn ($query) => $query->softBounced()->orWhere(fn ($query) => $query->hardBounced()));
+        return $builder->where(function ($query): void {
+            $query->whereNotNull('soft_bounced_at')
+                ->orWhereNotNull('hard_bounced_at');
+        });
     }
 
-    public function scopeSent(Builder $query): Builder
+    public function scopeSent(Builder $builder): Builder
     {
-        return $query->whereNotNull('sent_at');
+        return $builder->whereNotNull('sent_at');
     }
 
-    public function scopeUnsent(Builder $query): Builder
+    public function scopeUnsent(Builder $builder): Builder
     {
-        return $query->whereNull('sent_at');
+        return $builder->whereNull('sent_at');
     }
 
-    public function getStatusAttribute(): string
+    protected function status(): Attribute
     {
-        if ($this->hard_bounced_at) {
-            return __('Hard Bounced');
-        } elseif ($this->soft_bounced_at) {
-            return __('Soft Bounced');
-        } elseif ($this->complained_at) {
-            return __('Complained');
-        } elseif ($this->last_clicked_at) {
-            return __('Clicked');
-        } elseif ($this->last_opened_at) {
-            return __('Opened');
-        } elseif ($this->delivered_at) {
-            return __('Delivered');
-        } elseif ($this->resent_at) {
-            return __('Resent');
-        } elseif ($this->sent_at) {
-            return __('Sent');
-        } else {
+        return Attribute::make(get: function () {
+            if ($this->hard_bounced_at) {
+                return __('Hard Bounced');
+            }
+            if ($this->soft_bounced_at) {
+                return __('Soft Bounced');
+            }
+            if ($this->complained_at) {
+                return __('Complained');
+            }
+            if ($this->last_clicked_at) {
+                return __('Clicked');
+            }
+            if ($this->last_opened_at) {
+                return __('Opened');
+            }
+            if ($this->delivered_at) {
+                return __('Delivered');
+            }
+            if ($this->resent_at) {
+                return __('Resent');
+            }
+            if ($this->sent_at) {
+                return __('Sent');
+            }
+
             return __('Unsent');
-        }
+        });
     }
 }

@@ -2,11 +2,11 @@
 
 namespace Backstage\Mails\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Backstage\Mails\Enums\Provider;
 use Backstage\Mails\Events\MailEvent;
 use Backstage\Mails\Facades\MailProvider;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class WebhookController
 {

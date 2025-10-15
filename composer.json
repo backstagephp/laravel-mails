@@ -22,19 +22,22 @@
         "spatie/laravel-package-tools": "^1.15.0"
     },
     "require-dev": {
+        "driftingly/rector-laravel": "^2.1",
         "larastan/larastan": "^3.0",
         "laravel-notification-channels/discord": "^1.6",
         "laravel-notification-channels/telegram": "^4.0 || ^5.0 || ^6.0",
-        "laravel/slack-notification-channel": "^2.5 || ^3.3.2",
         "laravel/pint": "^1.17.0",
+        "laravel/slack-notification-channel": "^2.5 || ^3.3.2",
         "nunomaduro/collision": "^7.5.0|^8.4",
         "orchestra/testbench": "^8.5.0|^9.4.0",
-        "pestphp/pest-plugin-laravel": "^3.0",
         "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
-        "phpunit/phpunit": "^11.0"
+        "phpunit/phpunit": "^11.0",
+        "rector/rector": "^2.2",
+        "rector/rector-laravel": "^2.1"
     },
     "autoload": {
         "psr-4": {
