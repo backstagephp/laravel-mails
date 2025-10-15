@@ -12,12 +12,12 @@ class WebhookController
 {
     public function __invoke(Request $request, string $provider): Response
     {
-        dispatch(fn() => static::handle($request, $provider));
+        dispatch(fn () => static::handle($request, $provider));
 
         return response('Event processed.', status: 202);
     }
 
-    protected static function handle($request,  $provider): void
+    protected static function handle($request, $provider): void
     {
         if (! in_array($provider, array_column(Provider::cases(), 'value'))) {
             return;
