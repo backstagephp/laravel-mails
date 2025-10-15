@@ -13,6 +13,7 @@ class MailFactory extends Factory
     {
         return [
             'uuid' => $this->faker->uuid,
+            'mailer' => 'smtp',
             'mail_class' => '',
             'subject' => $this->faker->sentence(5),
             'from' => [
