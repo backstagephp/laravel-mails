@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
  * @mixin Model
+ *
+ * @phpstan-ignore-next-line
  */
 trait HasMails
 {

@@ -12,6 +12,8 @@ use Symfony\Component\Mime\Header\Headers;
 
 /**
  * @mixin Mailable
+ *
+ * @phpstan-ignore-next-line
  */
 trait AssociatesModels
 {

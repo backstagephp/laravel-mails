@@ -46,7 +46,7 @@ class TestCase extends Orchestra
         ]);
 
         $app['config']->set('queue.default', 'sync');
-        
+
         // Disable Ray to avoid type compatibility issues
         $app['config']->set('ray.enabled', false);
     }
