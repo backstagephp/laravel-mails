@@ -49,4 +49,4 @@ jobs:
           composer remove spatie/laravel-ray --no-interaction || true
 
       - name: Execute tests
-        run: vendor/bin/pest --ci
+        run: composer run test -- --ci
