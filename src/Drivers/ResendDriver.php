@@ -34,6 +34,7 @@ class ResendDriver extends MailDriver implements MailDriverContract
     public function eventMapping(): array
     {
         return [
+            EventType::ACCEPTED->value => ['type' => 'email.sent'],
             EventType::CLICKED->value => ['type' => 'email.clicked'],
             EventType::COMPLAINED->value => ['type' => 'email.complained'],
             EventType::DELIVERED->value => ['type' => 'email.delivered'],
