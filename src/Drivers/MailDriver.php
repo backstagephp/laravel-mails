@@ -38,7 +38,9 @@ abstract class MailDriver
     public function getDataFromPayload(array $payload): array
     {
         return collect($this->dataMapping())
-            ->mapWithKeys(fn ($value, $key) => [$key => data_get($payload, $value)])
+            ->mapWithKeys(fn ($value, $key) => [
+                $key => is_array($v = data_get($payload, $value)) ? json_encode($v) : $v
+            ])
             ->filter()
             ->merge([
                 'payload' => $payload,
