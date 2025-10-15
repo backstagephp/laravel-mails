@@ -4,7 +4,7 @@
 [![Tests](https://github.com/backstagephp/laravel-mails/actions/workflows/run-tests.yml/badge.svg?branch=main)](https://github.com/backstagephp/laravel-mails/actions/workflows/run-tests.yml)
 [![PHPStan](https://github.com/backstagephp/laravel-mails/actions/workflows/phpstan.yml/badge.svg?branch=main)](https://github.com/backstagephp/laravel-mails/actions/workflows/phpstan.yml)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/backstagephp/laravel-mails)
-![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/backstagephp/laravel-mails)
+![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/backstage/laravel-mails)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/backstage/laravel-mails.svg?style=flat-square)](https://packagist.org/packages/backstage/laravel-mails)
 
 ## Nice to meet you, we're [Backstage](https://backstagephp.com)
