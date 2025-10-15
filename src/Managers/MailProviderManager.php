@@ -5,6 +5,7 @@ namespace Backstage\Mails\Managers;
 use Illuminate\Support\Manager;
 use Backstage\Mails\Drivers\MailgunDriver;
 use Backstage\Mails\Drivers\PostmarkDriver;
+use Backstage\Mails\Drivers\ResendDriver;
 
 class MailProviderManager extends Manager
 {
@@ -21,6 +22,11 @@ class MailProviderManager extends Manager
     protected function createMailgunDriver(): MailgunDriver
     {
         return new MailgunDriver;
+    }
+
+    protected function createResendDriver(): ResendDriver
+    {
+        return new ResendDriver;
     }
 
     public function getDefaultDriver(): ?string
