@@ -6,7 +6,6 @@ use Aws\Exception\AwsException;
 use Aws\Sns\Message;
 use Aws\Sns\MessageValidator;
 use Aws\Sns\SnsClient;
-use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Transport\SesTransport;
 use Illuminate\Support\Arr;
@@ -136,7 +135,7 @@ class SesDriver extends MailDriver implements MailDriverContract
                 ]
             ]);
 
-            // 5. Subscribe to the topic
+            // 6. Subscribe to the topic
             $webhookUrl = URL::signedRoute('mails.webhook', ['provider' => Provider::SES]);
             $scheme = config('services.ses.scheme', 'https');
             $snsClient->subscribe([
@@ -187,10 +186,19 @@ class SesDriver extends MailDriver implements MailDriverContract
         return $event;
     }
 
+    protected function parseSnsMessage(array $payload): array
+    {
+        // The SNS Message field contains a JSON string with the actual SES event
+        if (isset($payload['Message']) && is_string($payload['Message'])) {
+            return json_decode($payload['Message'], true) ?? [];
+        }
+        return $payload;
+    }
+
     public function getUuidFromPayload(array $payload): ?string
     {
-        $message = Message::fromRawPostData();
-        $headers = $message['Message']['mail']['headers'] ?? [];
+        $sesMessage = $this->parseSnsMessage($payload);
+        $headers = $sesMessage['mail']['headers'] ?? [];
         $header = Arr::first($headers, function ($header) {
             return $header['name'] === config('mails.headers.uuid');
         });
@@ -200,59 +208,58 @@ class SesDriver extends MailDriver implements MailDriverContract
 
     protected function getTimestampFromPayload(array $payload): string
     {
+        // Work with SES message structure (already parsed by parseSnsMessage)
         foreach (['click', 'open', 'bounce', 'complaint', 'delivery', 'mail'] as $event) {
-            if (isset($payload['Message'][$event]['timestamp'])) {
-                return $payload['Message'][$event]['timestamp'];
+            if (isset($payload[$event]['timestamp'])) {
+                return $payload[$event]['timestamp'];
             }
         }
-        return $payload['Message']['Timestamp'];
+        return $payload['Timestamp'] ?? now()->toIso8601String();
     }
 
     public function getDataFromPayload(array $payload): array
     {
-        $message = Message::fromRawPostData();
-        $payload = $message->toArray();
+        $sesMessage = $this->parseSnsMessage($payload);
 
-        return collect($this->dataMapping())
-            ->mapWithKeys(function ($values, $key) use ($payload) {
-                foreach ($values as $value) {
-                    $value = data_get($payload, $value);
-                    if ($value !== null) {
-                        return [$key => $value];
-                    }
+        $data = [];
+        foreach ($this->dataMapping() as $key => $paths) {
+            foreach ($paths as $path) {
+                $value = data_get($sesMessage, $path);
+                if ($value !== null) {
+                    $data[$key] = $value;
+                    break;
                 }
-                return null;
-            })
-            ->filter()
-            ->merge([
-                'payload' => $payload,
-                'type' => $this->getEventFromPayload($payload),
-                'occurred_at' => $this->getTimestampFromPayload($payload),
-            ])
-            ->toArray();
+            }
+        }
+
+        return array_merge($data, [
+            'payload' => $payload,
+            'type' => $this->getEventFromPayload($sesMessage),
+            'occurred_at' => $this->getTimestampFromPayload($sesMessage),
+        ]);
     }
 
     public function eventMapping(): array
     {
         return [
-            EventType::ACCEPTED->value => ['Message.eventType' => 'Send'],
-            EventType::CLICKED->value => ['Message.eventType' => 'Click'],
-            EventType::COMPLAINED->value => ['Message.eventType' => 'Complaint'],
-            EventType::DELIVERED->value => ['Message.eventType' => 'Delivery'],
-            EventType::OPENED->value => ['Message.eventType' => 'Open'],
-            EventType::HARD_BOUNCED->value => ['Message.eventType' => 'Bounce', 'Message.bounce.bounceType' => 'Permanent'],
-            EventType::SOFT_BOUNCED->value => ['Message.eventType' => 'Bounce', 'Message.bounce.bounceType' => 'Temporary'],
+            EventType::ACCEPTED->value => ['eventType' => 'Send'],
+            EventType::CLICKED->value => ['eventType' => 'Click'],
+            EventType::COMPLAINED->value => ['eventType' => 'Complaint'],
+            EventType::DELIVERED->value => ['eventType' => 'Delivery'],
+            EventType::OPENED->value => ['eventType' => 'Open'],
+            EventType::HARD_BOUNCED->value => ['eventType' => 'Bounce', 'bounce.bounceType' => 'Permanent'],
+            EventType::SOFT_BOUNCED->value => ['eventType' => 'Bounce', 'bounce.bounceType' => 'Temporary'],
         ];
     }
 
     public function dataMapping(): array
     {
         return [
-            'ip_address' => ['Message.click.ipAddress', 'Message.open.ipAddress'],
-            'browser' => ['Message.mail.client-info.client-name'],
-            'user_agent' => ['Message.click.userAgent', 'Message.open.userAgent','Message.complaint.userAgent'],
-            'link' => ['Message.click.link'],
-            'tag' => ['Message.click.linkTags'],
+            'ip_address' => ['click.ipAddress', 'open.ipAddress'],
+            'browser' => ['mail.client-info.client-name'],
+            'user_agent' => ['click.userAgent', 'open.userAgent', 'complaint.userAgent'],
+            'link' => ['click.link'],
+            'tag' => ['click.linkTags'],
         ];
     }
 

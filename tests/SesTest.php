@@ -24,7 +24,7 @@ it('can receive incoming delivery webhook from amazon ses', function () {
 
     $mail = MailModel::latest()->first();
 
-    $message = json_decode('{
+    $sesEvent = json_decode('{
   "eventType": "Delivery",
   "mail": {
     "timestamp": "2016-10-19T23:20:52.240Z",
@@ -60,6 +60,10 @@ it('can receive incoming delivery webhook from amazon ses', function () {
       {
         "name": "Content-Transfer-Encoding",
         "value": "7bit"
+      },
+      {
+        "name": "X-Laravel-Mail-UUID",
+        "value": "' . $mail->uuid . '"
       }
     ],
     "commonHeaders": {
@@ -109,7 +113,9 @@ it('can receive incoming delivery webhook from amazon ses', function () {
 }', true);
 
     post(URL::signedRoute('mails.webhook', ['provider' => Provider::SES]), [
-        'Message' =>  $message,
+        'Type' => 'Notification',
+        'Message' => json_encode($sesEvent),
+        'Timestamp' => '2016-10-19T23:21:04.133Z',
         'signature' => 'secrethmacsignature',
     ])->assertAccepted();
 
