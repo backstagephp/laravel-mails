@@ -22,12 +22,13 @@ class SesDriver extends MailDriver implements MailDriverContract
     {
         $mailer = Mail::driver('ses');
         if ($mailer === null) {
-            $components->warn("Failed to create Ses webhook");
-            $components->error("There is no Amazon SES Driver configured in your laravel application.");
+            $components->warn('Failed to create Ses webhook');
+            $components->error('There is no Amazon SES Driver configured in your laravel application.');
+
             return;
         }
 
-        $trackingConfig = (array)config('mails.logging.tracking');
+        $trackingConfig = (array) config('mails.logging.tracking');
 
         // send - The call was successful and Amazon SES is attempting to deliver the email.
         // reject - Amazon SES determined that the email contained a virus and rejected it.
@@ -40,29 +41,29 @@ class SesDriver extends MailDriver implements MailDriverContract
         $events = [];
         $eventTypes = [];
 
-        if ((bool)$trackingConfig['opens']) {
+        if ((bool) $trackingConfig['opens']) {
             $events[] = 'open';
             $eventTypes[] = 'Delivery';
         }
 
-        if ((bool)$trackingConfig['clicks']) {
+        if ((bool) $trackingConfig['clicks']) {
             $events[] = 'click';
             $eventTypes[] = 'Delivery';
         }
 
-        if ((bool)$trackingConfig['deliveries']) {
+        if ((bool) $trackingConfig['deliveries']) {
             $events[] = 'delivery';
             $eventTypes[] = 'Delivery';
         }
 
-        if ((bool)$trackingConfig['bounces']) {
+        if ((bool) $trackingConfig['bounces']) {
             $events[] = 'reject';
             $events[] = 'bounce';
             $events[] = 'renderingFailure';
             $eventTypes[] = 'Bounce';
         }
 
-        if ((bool)$trackingConfig['complaints']) {
+        if ((bool) $trackingConfig['complaints']) {
             $events[] = 'complaint';
             $eventTypes[] = 'Complaint';
         }
@@ -127,12 +128,12 @@ class SesDriver extends MailDriver implements MailDriverContract
                 'ConfigurationSetName' => $configurationSet,
                 'EventDestination' => [
                     'Enabled' => true,
-                    'Name' => $configurationSet . '-' . uniqid(),
+                    'Name' => $configurationSet.'-'.uniqid(),
                     'MatchingEventTypes' => $events,
                     'SNSDestination' => [
                         'TopicARN' => $topicArn,
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
             // 6. Subscribe to the topic
@@ -141,17 +142,18 @@ class SesDriver extends MailDriver implements MailDriverContract
             $snsClient->subscribe([
                 'Endpoint' => $webhookUrl,
                 'TopicArn' => $topicArn,
-                'Protocol' => $scheme
+                'Protocol' => $scheme,
             ]);
 
         } catch (\Throwable $e) {
             report($e);
-            $components->warn("Failed to create Ses webhook");
+            $components->warn('Failed to create Ses webhook');
             $components->error($e->getMessage());
+
             return;
         }
 
-        $components->info("Created SES Webhooks for: " . implode(", ", $eventTypes));
+        $components->info('Created SES Webhooks for: '.implode(', ', $eventTypes));
     }
 
     public function verifyWebhookSignature(array $payload): bool
@@ -172,9 +174,11 @@ class SesDriver extends MailDriver implements MailDriverContract
             if ($message['Type'] === 'SubscriptionConfirmation') {
                 Http::timeout(10)->get($message['SubscribeURL'])->throw();
             }
+
             return true;
         } catch (\Throwable $e) {
             report($e);
+
             return false;
         }
     }
@@ -192,6 +196,7 @@ class SesDriver extends MailDriver implements MailDriverContract
         if (isset($payload['Message']) && is_string($payload['Message'])) {
             return json_decode($payload['Message'], true) ?? [];
         }
+
         return $payload;
     }
 
@@ -214,6 +219,7 @@ class SesDriver extends MailDriver implements MailDriverContract
                 return $payload[$event]['timestamp'];
             }
         }
+
         return $payload['Timestamp'] ?? now()->toIso8601String();
     }
 
@@ -267,7 +273,7 @@ class SesDriver extends MailDriver implements MailDriverContract
     {
         $config = array_merge(
             [
-                'version' => 'latest'
+                'version' => 'latest',
             ],
             $config
         );
@@ -277,10 +283,10 @@ class SesDriver extends MailDriver implements MailDriverContract
 
     protected function addSnsCredentials(array $config): array
     {
-        if (!empty($config['key']) && !empty($config['secret'])) {
+        if (! empty($config['key']) && ! empty($config['secret'])) {
             $config['credentials'] = Arr::only($config, ['key', 'secret']);
 
-            if (!empty($config['token'])) {
+            if (! empty($config['token'])) {
                 $config['credentials']['token'] = $config['token'];
             }
         }
