@@ -63,7 +63,7 @@ it('can receive incoming delivery webhook from amazon ses', function () {
       },
       {
         "name": "X-Laravel-Mail-UUID",
-        "value": "' . $mail->uuid . '"
+        "value": "'.$mail->uuid.'"
       }
     ],
     "commonHeaders": {
@@ -124,7 +124,7 @@ it('can receive incoming delivery webhook from amazon ses', function () {
     ]);
 });
 //
-//it('can receive incoming accept webhook from mailgun', function () {
+// it('can receive incoming accept webhook from mailgun', function () {
 //    Mail::send([], [], function (Message $message) {
 //        $message->to('mark@vormkracht10.nl')
 //            ->from('local@computer.nl')
@@ -180,9 +180,9 @@ it('can receive incoming delivery webhook from amazon ses', function () {
 //    assertDatabaseHas((new MailEvent)->getTable(), [
 //        'type' => EventType::ACCEPTED->value,
 //    ]);
-//});
+// });
 //
-//it('can receive incoming hard bounce webhook from mailgun', function () {
+// it('can receive incoming hard bounce webhook from mailgun', function () {
 //    Mail::send([], [], function (Message $message) {
 //        $message->to('mark@vormkracht10.nl')
 //            ->from('local@computer.nl')
@@ -239,9 +239,9 @@ it('can receive incoming delivery webhook from amazon ses', function () {
 //    assertDatabaseHas((new MailEvent)->getTable(), [
 //        'type' => EventType::HARD_BOUNCED->value,
 //    ]);
-//});
+// });
 //
-//it('can receive incoming soft bounce webhook from mailgun', function () {
+// it('can receive incoming soft bounce webhook from mailgun', function () {
 //    Mail::send([], [], function (Message $message) {
 //        $message->to('mark@vormkracht10.nl')
 //            ->from('local@computer.nl')
@@ -298,9 +298,9 @@ it('can receive incoming delivery webhook from amazon ses', function () {
 //    assertDatabaseHas((new MailEvent)->getTable(), [
 //        'type' => EventType::SOFT_BOUNCED->value,
 //    ]);
-//});
+// });
 //
-//it('can receive incoming complaint webhook from mailgun', function () {
+// it('can receive incoming complaint webhook from mailgun', function () {
 //    Mail::send([], [], function (Message $message) {
 //        $message->to('mark@vormkracht10.nl')
 //            ->from('local@computer.nl')
@@ -355,9 +355,9 @@ it('can receive incoming delivery webhook from amazon ses', function () {
 //    assertDatabaseHas((new MailEvent)->getTable(), [
 //        'type' => EventType::COMPLAINED->value,
 //    ]);
-//});
+// });
 //
-//it('can receive incoming open webhook from mailgun', function () {
+// it('can receive incoming open webhook from mailgun', function () {
 //    Mail::send([], [], function (Message $message) {
 //        $message->to('mark@vormkracht10.nl')
 //            ->from('local@computer.nl')
@@ -416,9 +416,9 @@ it('can receive incoming delivery webhook from amazon ses', function () {
 //    assertDatabaseHas((new MailEvent)->getTable(), [
 //        'type' => EventType::OPENED->value,
 //    ]);
-//});
+// });
 //
-//it('can receive incoming click webhook from mailgun', function () {
+// it('can receive incoming click webhook from mailgun', function () {
 //    Mail::send([], [], function (Message $message) {
 //        $message->to('mark@vormkracht10.nl')
 //            ->from('local@computer.nl')
@@ -481,9 +481,9 @@ it('can receive incoming delivery webhook from amazon ses', function () {
 //        'type' => EventType::CLICKED->value,
 //        'link' => 'https://example.com',
 //    ]);
-//});
+// });
 //
-//it('can receive incoming unsubscribe webhook from mailgun', function () {
+// it('can receive incoming unsubscribe webhook from mailgun', function () {
 //    Mail::send([], [], function (Message $message) {
 //        $message->to('mark@vormkracht10.nl')
 //            ->from('local@computer.nl')
@@ -537,4 +537,4 @@ it('can receive incoming delivery webhook from amazon ses', function () {
 //    assertDatabaseHas((new MailEvent)->getTable(), [
 //        'type' => EventType::UNSUBSCRIBED->value,
 //    ]);
-//});
+// });

@@ -2,12 +2,12 @@
 
 namespace Backstage\Mails\Tests;
 
+use Backstage\Mails\MailsServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Filesystem\Filesystem;
 use NotificationChannels\Discord\DiscordServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use SplFileInfo;
-use Backstage\Mails\MailsServiceProvider;
 
 class TestCase extends Orchestra
 {
