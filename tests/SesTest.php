@@ -3,10 +3,10 @@
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
-use Vormkracht10\Mails\Enums\EventType;
-use Vormkracht10\Mails\Enums\Provider;
-use Vormkracht10\Mails\Models\Mail as MailModel;
-use Vormkracht10\Mails\Models\MailEvent;
+use Backstage\Mails\Enums\EventType;
+use Backstage\Mails\Enums\Provider;
+use Backstage\Mails\Models\Mail as MailModel;
+use Backstage\Mails\Models\MailEvent;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\post;

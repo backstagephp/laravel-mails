@@ -6,15 +6,16 @@ use Aws\Exception\AwsException;
 use Aws\Sns\Message;
 use Aws\Sns\MessageValidator;
 use Aws\Sns\SnsClient;
+use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Transport\SesTransport;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
-use Vormkracht10\Mails\Contracts\MailDriverContract;
-use Vormkracht10\Mails\Enums\EventType;
-use Vormkracht10\Mails\Enums\Provider;
+use Backstage\Mails\Contracts\MailDriverContract;
+use Backstage\Mails\Enums\EventType;
+use Backstage\Mails\Enums\Provider;
 
 class SesDriver extends MailDriver implements MailDriverContract
 {
@@ -292,5 +293,25 @@ class SesDriver extends MailDriver implements MailDriverContract
         }
 
         return Arr::except($config, ['token']);
+    }
+
+    public function unsuppressEmailAddress(string $address, ?int $stream_id = null): Response
+    {
+        $mailer = Mail::driver('ses');
+        /** @var SesTransport $sesTransport */
+        $sesTransport = $mailer->getSymfonyTransport();
+        $sesClient = $sesTransport->ses();
+
+        try {
+            $sesClient->deleteSuppressedDestination([
+                'EmailAddress' => $address,
+            ]);
+
+            return Http::response(null, 200);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return Http::response(['error' => $e->getMessage()], 400);
+        }
     }
 }
