@@ -6,6 +6,9 @@ use Aws\Exception\AwsException;
 use Aws\Sns\Message;
 use Aws\Sns\MessageValidator;
 use Aws\Sns\SnsClient;
+use Backstage\Mails\Contracts\MailDriverContract;
+use Backstage\Mails\Enums\EventType;
+use Backstage\Mails\Enums\Provider;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Transport\SesTransport;
@@ -13,9 +16,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
-use Backstage\Mails\Contracts\MailDriverContract;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Enums\Provider;
 
 class SesDriver extends MailDriver implements MailDriverContract
 {

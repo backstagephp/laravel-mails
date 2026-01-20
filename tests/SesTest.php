@@ -1,12 +1,12 @@
 <?php
 
-use Illuminate\Mail\Message;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\URL;
 use Backstage\Mails\Enums\EventType;
 use Backstage\Mails\Enums\Provider;
 use Backstage\Mails\Models\Mail as MailModel;
 use Backstage\Mails\Models\MailEvent;
+use Illuminate\Mail\Message;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\post;
