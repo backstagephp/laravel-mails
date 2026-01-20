@@ -1,6 +1,6 @@
 <?php
 
-namespace Vormkracht10\Mails\Drivers;
+namespace Backstage\Mails\Drivers;
 
 use Aws\Exception\AwsException;
 use Aws\Sns\Message;
