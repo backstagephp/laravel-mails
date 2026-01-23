@@ -18,7 +18,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName): string => 'Backstage\\Mails\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName): string => 'Backstage\\Mails\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
         );
 
         $this->loadMigrations();
@@ -57,7 +57,7 @@ class TestCase extends Orchestra
     protected function loadMigrations(): void
     {
         $filesystem = new Filesystem;
-        $migrationFiles = $filesystem->files(__DIR__.'/../database/migrations/');
+        $migrationFiles = $filesystem->files(__DIR__ . '/../database/migrations/');
 
         // Sorting to ensure migrations run in the correct order
         usort($migrationFiles, fn ($a, $b): int => strcmp((string) $a->getFilename(), (string) $b->getFilename()));

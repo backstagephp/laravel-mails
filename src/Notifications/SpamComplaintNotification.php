@@ -13,7 +13,8 @@ use NotificationChannels\Telegram\TelegramMessage;
 
 class SpamComplaintNotification extends Notification implements ShouldQueue
 {
-    use HasDynamicDrivers, Queueable;
+    use HasDynamicDrivers;
+    use Queueable;
 
     public function __construct(protected Mail $mail) {}
 
@@ -28,7 +29,7 @@ class SpamComplaintNotification extends Notification implements ShouldQueue
             '🔥', '🧯', '‼️', '⁉️', '🔴', '📣', '😅', '🥵',
         ]);
 
-        return $emoji.' mail has bounced';
+        return $emoji . ' mail has bounced';
     }
 
     public function toDiscord(): DiscordMessage

@@ -36,7 +36,7 @@ class StoreMailRelations
         );
     }
 
-    protected function getAssociatedModels(Email $email): array|false
+    protected function getAssociatedModels(Email $email): array | false
     {
         $encrypted = $this->getHeaderBody(
             $email,

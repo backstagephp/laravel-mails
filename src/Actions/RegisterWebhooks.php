@@ -9,7 +9,8 @@ use Illuminate\Console\View\Components\Factory;
 
 class RegisterWebhooks
 {
-    use AsAction, InteractsWithIO;
+    use AsAction;
+    use InteractsWithIO;
 
     public function handle(string $provider, Factory $factory): void
     {

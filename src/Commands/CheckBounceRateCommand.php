@@ -10,7 +10,7 @@ class CheckBounceRateCommand extends Command
 {
     protected $signature = 'mail:bounce-rate';
 
-    protected $description = 'Check if the bounce rate is higher than the configured limit '.
+    protected $description = 'Check if the bounce rate is higher than the configured limit ' .
         'and send a notification if it is.';
 
     public function handle(): int

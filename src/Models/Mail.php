@@ -52,7 +52,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Mail extends Model
 {
-    use HasFactory, MassPrunable;
+    use HasFactory;
+    use MassPrunable;
 
     protected $fillable = [
         'uuid',

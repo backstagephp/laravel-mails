@@ -28,7 +28,7 @@ class AttachUuid
 
     public function getProvider(MessageSending $messageSending): string
     {
-        return config('mail.mailers.'.$messageSending->data['mailer'].'.transport') ?? $messageSending->data['mailer'];
+        return config('mail.mailers.' . $messageSending->data['mailer'] . '.transport') ?? $messageSending->data['mailer'];
     }
 
     public function shouldTrackMails(string $provider): bool
@@ -39,7 +39,7 @@ class AttachUuid
 
     public function driverExistsForProvider(string $provider): bool
     {
-        return class_exists('Backstage\\Mails\\Drivers\\'.ucfirst($provider).'Driver');
+        return class_exists('Backstage\\Mails\\Drivers\\' . ucfirst($provider) . 'Driver');
     }
 
     public function trackingEnabled(): bool

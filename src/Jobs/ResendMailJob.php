@@ -14,7 +14,11 @@ use Illuminate\Support\Facades\Mail;
 
 class ResendMailJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, InteractsWithSockets, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use InteractsWithSockets;
+    use Queueable;
+    use SerializesModels;
 
     /**
      * @param  non-empty-array<int, string>  $to
