@@ -1,0 +1,83 @@
+{
+    "name": "backstage/laravel-mails",
+    "description": "Laravel Mails can collect everything you might want to track about the mails that has been sent by your Laravel app.",
+    "keywords": [
+        "backstagephp",
+        "laravel",
+        "laravel-mails"
+    ],
+    "homepage": "https://github.com/backstagephp/laravel-mails",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mark van Eijk",
+            "email": "mark@vormkracht10.nl",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "^10.0 || ^11.0 || ^12.0",
+        "laravel/helpers": "^1.7.0",
+        "spatie/laravel-package-tools": "^1.15.0"
+    },
+    "require-dev": {
+        "driftingly/rector-laravel": "^2.1",
+        "larastan/larastan": "^3.0",
+        "laravel-notification-channels/discord": "^1.6",
+        "laravel-notification-channels/telegram": "^4.0 || ^5.0 || ^6.0",
+        "laravel/pint": "^1.17.0",
+        "laravel/slack-notification-channel": "^2.5 || ^3.3.2",
+        "nunomaduro/collision": "^7.5.0|^8.4",
+        "orchestra/testbench": "^8.5.0|^9.4.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpunit/phpunit": "^11.0",
+        "rector/rector": "^2.2",
+        "rector/rector-laravel": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Backstage\\Mails\\": "src",
+            "Backstage\\Mails\\Database\\Factories\\": "database/factories"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Backstage\\Mails\\Tests\\": "tests"
+        },
+        "files": [
+            "helpers.php"
+        ]
+    },
+    "scripts": {
+        "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
+        "analyse": "@php vendor/bin/phpstan analyse",
+        "test": "@php vendor/bin/pest",
+        "test-coverage": "@php vendor/bin/pest --coverage",
+        "format": "@php vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true,
+            "php-http/discovery": true
+        }
+    },
+    "conflict": {
+        "spatie/laravel-ray": "*"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Backstage\\Mails\\MailsServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

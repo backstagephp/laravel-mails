@@ -1,0 +1,31 @@
+name: phpstan
+
+on:
+  push:
+    paths:
+      - '**.php'
+      - 'phpstan.neon.dist'
+
+jobs:
+  phpstan:
+    name: phpstan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.1, 8.2]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v2
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan --error-format=github
