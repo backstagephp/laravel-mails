@@ -105,7 +105,7 @@ class PostmarkDriver extends MailDriver implements MailDriverContract
 
     public function attachUuidToMail(MessageSending $messageSending, string $uuid): MessageSending
     {
-        $messageSending->message->getHeaders()->addTextHeader('X-PM-Metadata-'.config('mails.headers.uuid'), $uuid);
+        $messageSending->message->getHeaders()->addTextHeader('X-PM-Metadata-' . config('mails.headers.uuid'), $uuid);
 
         return $messageSending;
     }
@@ -182,7 +182,7 @@ class PostmarkDriver extends MailDriver implements MailDriverContract
             ])
             ->baseUrl('https://api.postmarkapp.com/');
 
-        return $pendingRequest->post('message-streams/'.$stream_id.'/suppressions/delete', [
+        return $pendingRequest->post('message-streams/' . $stream_id . '/suppressions/delete', [
             'Suppressions' => [['emailAddress' => $address]],
         ]);
     }

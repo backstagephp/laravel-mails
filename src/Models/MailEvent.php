@@ -98,6 +98,6 @@ class MailEvent extends Model
 
     protected function eventClass(): Attribute
     {
-        return Attribute::make(get: fn (): string => 'Backstage\Mails\Events\Mail'.Str::studly($this->type->value));
+        return Attribute::make(get: fn (): string => 'Backstage\Mails\Events\Mail' . Str::studly($this->type->value));
     }
 }

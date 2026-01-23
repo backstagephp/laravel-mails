@@ -8,7 +8,8 @@ use Backstage\Mails\Traits\SendsNotifications;
 
 class SendHighBounceRateNotifications
 {
-    use AsAction, SendsNotifications;
+    use AsAction;
+    use SendsNotifications;
 
     /**
      * @param  float|int  $rate

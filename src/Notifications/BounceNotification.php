@@ -14,7 +14,8 @@ use NotificationChannels\Telegram\TelegramMessage;
 
 class BounceNotification extends Notification implements ShouldQueue
 {
-    use HasDynamicDrivers, Queueable;
+    use HasDynamicDrivers;
+    use Queueable;
 
     public function __construct(protected Mail $mail) {}
 

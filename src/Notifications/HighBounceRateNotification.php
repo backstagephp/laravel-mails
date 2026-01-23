@@ -13,7 +13,8 @@ use NotificationChannels\Telegram\TelegramMessage;
 
 class HighBounceRateNotification extends Notification implements ShouldQueue
 {
-    use HasDynamicDrivers, Queueable;
+    use HasDynamicDrivers;
+    use Queueable;
 
     /**
      * @param  float|int  $rate

@@ -23,6 +23,7 @@ it('will send notification on bounce', function (): void {
         ->create();
 
     Notification::assertSentTimes(
-        BounceNotification::class, 1
+        BounceNotification::class,
+        1
     );
 });
