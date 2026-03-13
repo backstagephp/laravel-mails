@@ -26,10 +26,15 @@ class TestCase extends Orchestra
 
     protected function getPackageProviders($app): array
     {
-        return [
-            DiscordServiceProvider::class,
+        $providers = [
             MailsServiceProvider::class,
         ];
+
+        if (class_exists(DiscordServiceProvider::class)) {
+            $providers[] = DiscordServiceProvider::class;
+        }
+
+        return $providers;
     }
 
     /**
