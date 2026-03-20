@@ -53,7 +53,7 @@ class MailsServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews()
             ->hasMigrations($this->getMigrations())
-            ->hasRoutes('webhooks')
+            // ->hasRoutes('webhooks')
             ->hasCommands(
                 MonitorMailCommand::class,
                 PruneMailCommand::class,
