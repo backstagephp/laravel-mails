@@ -20,7 +20,7 @@ class ResendMailCommand extends Command implements PromptsForMissingInput
     {
         $uuid = $this->argument('uuid');
 
-        $mail = mail::where('uuid', $uuid)->first();
+        $mail = Mail::where('uuid', $uuid)->first();
 
         if (is_null($mail)) {
             $this->components->error("Mail with uuid: \"{$uuid}\" does not exist");
