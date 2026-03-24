@@ -4,8 +4,6 @@ use Backstage\Mails\Models\Mail as MailModel;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
 
-use function Pest\Laravel\assertDatabaseHas;
-
 beforeEach(function (): void {
     config()->set('mail.mailers.smtp', [
         'transport' => 'smtp',
