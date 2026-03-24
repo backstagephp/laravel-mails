@@ -74,7 +74,19 @@ Add the API key of your email service provider to the `config/services.php` file
     'webhook_signing_key' => env('MAILGUN_WEBHOOK_SIGNING_KEY'),
     'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
     'scheme' => 'https',
-]
+],
+
+'ses' => [
+    // You should already have these set up by Laravel's default installation
+    'key' => env('AWS_ACCESS_KEY_ID'),
+    'secret' => env('AWS_SECRET_ACCESS_KEY'),
+    'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+    
+    // This one is package-specific
+    'configuration_set_name' => env('AWS_SES_CONFIGURATION_SET', 'laravel-mails-ses-webhook'),
+    'account_id' => env('AWS_ACCOUNT_ID', ''), // Your AWS account id
+    'scheme' => 'https', // 'http' or 'https'
+],
 ```
 
 When done, run this command with the slug of your service provider:
@@ -223,6 +235,16 @@ This is the contents of the published config file:
     ],
 ]
 ```
+
+### [Optional] Amazon SES
+
+When using Amazon SES, you also require the following dependencies
+
+```bash
+composer require aws/aws-sdk-php aws/aws-php-sns-message-validator
+```
+
+Your AWS SES user should also have the authorization to create SNS topics.
 
 ## Usage
 
