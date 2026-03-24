@@ -1,20 +1,21 @@
 <?php
 
-namespace Vormkracht10\Mails\Drivers;
+namespace Backstage\Mails\Drivers;
 
 use Aws\Exception\AwsException;
 use Aws\Sns\Message;
 use Aws\Sns\MessageValidator;
 use Aws\Sns\SnsClient;
+use Backstage\Mails\Contracts\MailDriverContract;
+use Backstage\Mails\Enums\EventType;
+use Backstage\Mails\Enums\Provider;
+use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Transport\SesTransport;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
-use Vormkracht10\Mails\Contracts\MailDriverContract;
-use Vormkracht10\Mails\Enums\EventType;
-use Vormkracht10\Mails\Enums\Provider;
 
 class SesDriver extends MailDriver implements MailDriverContract
 {
@@ -22,33 +23,26 @@ class SesDriver extends MailDriver implements MailDriverContract
     {
         $mailer = Mail::driver('ses');
         if ($mailer === null) {
-            $components->warn('Failed to create Ses webhook');
-            $components->error('There is no Amazon SES Driver configured in your laravel application.');
+            $components->warn('Failed to create SES webhook');
+            $components->error('There is no Amazon SES Driver configured in your Laravel application.');
 
             return;
         }
 
         $trackingConfig = (array) config('mails.logging.tracking');
 
-        // send - The call was successful and Amazon SES is attempting to deliver the email.
-        // reject - Amazon SES determined that the email contained a virus and rejected it.
-        // bounce - The recipient's mail server permanently rejected the email. This corresponds to a hard bounce.
-        // complaint - The recipient marked the email as spam.
-        // delivery - Amazon SES successfully delivered the email to the recipient's mail server.
-        // open - The recipient received the email and opened it in their email client.
-        // click - The recipient clicked one or more links in the email.
-        // renderingFailure - Amazon SES did not send the email because of a template rendering issue.
+        // Configuration Set Event Destination event types (for open/click/delivery/bounce/complaint tracking)
         $events = [];
+
+        // SNS Identity Notification types (only Bounce, Complaint, Delivery are valid)
         $eventTypes = [];
 
         if ((bool) $trackingConfig['opens']) {
             $events[] = 'open';
-            $eventTypes[] = 'Delivery';
         }
 
         if ((bool) $trackingConfig['clicks']) {
             $events[] = 'click';
-            $eventTypes[] = 'Delivery';
         }
 
         if ((bool) $trackingConfig['deliveries']) {
@@ -71,7 +65,7 @@ class SesDriver extends MailDriver implements MailDriverContract
         /** @var SesTransport $sesTransport */
         $sesTransport = $mailer->getSymfonyTransport();
         $sesClient = $sesTransport->ses();
-        $configurationSet = config('services.ses.options.ConfigurationSetName', 'laravel-mails-ses-webhook');
+        $configurationSet = config('services.ses.configuration_set_name', 'laravel-mails-ses-webhook');
 
         try {
             // 1. Get or create the Configuration Set
@@ -82,13 +76,12 @@ class SesDriver extends MailDriver implements MailDriverContract
                     ],
                 ]);
             } catch (AwsException $e) {
-                // Already exists, move on!
                 if ($e->getAwsErrorCode() !== 'ConfigurationSetAlreadyExists') {
                     throw $e;
                 }
             }
 
-            // 2. Create a SNS Topic
+            // 2. Create a SNS Topic (idempotent - returns existing topic ARN if it already exists)
             $config = config('services.sns', config('services.ses', []));
             $snsClient = $this->createSnsClient($config);
             $result = $snsClient->createTopic([
@@ -96,26 +89,32 @@ class SesDriver extends MailDriver implements MailDriverContract
             ]);
             $topicArn = $result->get('TopicArn');
 
-            // 3. Give access to SES to publish notifications to the topic.
-            $snsClient->addPermission([
-                'AWSAccountId' => [$config['account_id'] ?? ''],
-                'ActionName' => ['Publish'],
-                'Label' => 'ses-notification-policy',
-                'TopicArn' => $topicArn,
-            ]);
+            // 3. Give access to SES to publish notifications to the topic
+            try {
+                $snsClient->addPermission([
+                    'AWSAccountId' => [$config['account_id'] ?? ''],
+                    'ActionName' => ['Publish'],
+                    'Label' => 'ses-notification-policy',
+                    'TopicArn' => $topicArn,
+                ]);
+            } catch (AwsException $e) {
+                if ($e->getAwsErrorCode() !== 'InvalidParameter'
+                    || ! str_contains($e->getMessage(), 'already exists')) {
+                    throw $e;
+                }
+            }
 
-            // 4. Set the channels
+            // 4. Set identity notification topics for Bounce/Complaint/Delivery
             $eventTypes = array_unique($eventTypes);
             foreach ($eventTypes as $eventType) {
                 $identity = config('services.ses.identity', config('mail.from.address'));
-                // get notified for the various types of events via SNS
+
                 $sesClient->setIdentityNotificationTopic([
                     'Identity' => $identity,
                     'NotificationType' => $eventType,
                     'SnsTopic' => $topicArn,
                 ]);
 
-                // Force SNS to include the SES mail headers in the notification
                 $sesClient->setIdentityHeadersInNotificationsEnabled([
                     'Identity' => $identity,
                     'NotificationType' => $eventType,
@@ -123,12 +122,24 @@ class SesDriver extends MailDriver implements MailDriverContract
                 ]);
             }
 
-            // 5. Register SNS as the event destination
+            // 5. Register SNS as the event destination (remove existing first to avoid duplicates)
+            $eventDestinationName = $configurationSet.'-sns';
+            try {
+                $sesClient->deleteConfigurationSetEventDestination([
+                    'ConfigurationSetName' => $configurationSet,
+                    'EventDestinationName' => $eventDestinationName,
+                ]);
+            } catch (AwsException $e) {
+                if ($e->getAwsErrorCode() !== 'EventDestinationDoesNotExist') {
+                    throw $e;
+                }
+            }
+
             $sesClient->createConfigurationSetEventDestination([
                 'ConfigurationSetName' => $configurationSet,
                 'EventDestination' => [
                     'Enabled' => true,
-                    'Name' => $configurationSet.'-'.uniqid(),
+                    'Name' => $eventDestinationName,
                     'MatchingEventTypes' => $events,
                     'SNSDestination' => [
                         'TopicARN' => $topicArn,
@@ -147,13 +158,13 @@ class SesDriver extends MailDriver implements MailDriverContract
 
         } catch (\Throwable $e) {
             report($e);
-            $components->warn('Failed to create Ses webhook');
+            $components->warn('Failed to create SES webhook');
             $components->error($e->getMessage());
 
             return;
         }
 
-        $components->info('Created SES Webhooks for: '.implode(', ', $eventTypes));
+        $components->info('Created SES Webhooks for: '.implode(', ', $events));
     }
 
     public function verifyWebhookSignature(array $payload): bool
@@ -162,25 +173,25 @@ class SesDriver extends MailDriver implements MailDriverContract
             return true;
         }
 
-        // Weird SNS thing, you need to read the raw post body
         $message = Message::fromRawPostData();
 
-        $validator = (new MessageValidator(function ($url) {
+        $validator = new MessageValidator(function ($url) {
             return Http::timeout(10)->get($url)->body();
-        }));
+        });
 
         try {
             $validator->validate($message);
-            if ($message['Type'] === 'SubscriptionConfirmation') {
-                Http::timeout(10)->get($message['SubscribeURL'])->throw();
-            }
-
-            return true;
         } catch (\Throwable $e) {
             report($e);
 
             return false;
         }
+
+        if ($message['Type'] === 'SubscriptionConfirmation') {
+            Http::timeout(10)->get($message['SubscribeURL'])->throw();
+        }
+
+        return true;
     }
 
     public function attachUuidToMail(MessageSending $event, string $uuid): MessageSending
@@ -192,7 +203,6 @@ class SesDriver extends MailDriver implements MailDriverContract
 
     protected function parseSnsMessage(array $payload): array
     {
-        // The SNS Message field contains a JSON string with the actual SES event
         if (isset($payload['Message']) && is_string($payload['Message'])) {
             return json_decode($payload['Message'], true) ?? [];
         }
@@ -213,7 +223,6 @@ class SesDriver extends MailDriver implements MailDriverContract
 
     protected function getTimestampFromPayload(array $payload): string
     {
-        // Work with SES message structure (already parsed by parseSnsMessage)
         foreach (['click', 'open', 'bounce', 'complaint', 'delivery', 'mail'] as $event) {
             if (isset($payload[$event]['timestamp'])) {
                 return $payload[$event]['timestamp'];
@@ -232,7 +241,7 @@ class SesDriver extends MailDriver implements MailDriverContract
             foreach ($paths as $path) {
                 $value = data_get($sesMessage, $path);
                 if ($value !== null) {
-                    $data[$key] = $value;
+                    $data[$key] = is_array($value) ? json_encode($value) : $value;
                     break;
                 }
             }
@@ -267,6 +276,12 @@ class SesDriver extends MailDriver implements MailDriverContract
             'link' => ['click.link'],
             'tag' => ['click.linkTags'],
         ];
+    }
+
+    public function unsuppressEmailAddress(string $address, ?int $stream_id = null): Response
+    {
+        // SES doesn't support unsuppressing email addresses via this package's API
+        return new Response(new \GuzzleHttp\Psr7\Response(200, [], 'Not supported'));
     }
 
     protected function createSnsClient(array $config): SnsClient

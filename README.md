@@ -85,8 +85,7 @@ Add the API key of your email service provider to the `config/services.php` file
     // This one is package-specific
     'configuration_set_name' => env('AWS_SES_CONFIGURATION_SET', 'laravel-mails-ses-webhook'),
     'account_id' => env('AWS_ACCOUNT_ID', ''), // Your AWS account id
-    'scheme' => 'https', // 'http' or 'https',
-    'verify_signature' => true,
+    'scheme' => 'https', // 'http' or 'https'
 ],
 ```
 
@@ -245,7 +244,7 @@ When using Amazon SES, you also require the following dependencies
 composer require aws/aws-sdk-php aws/aws-php-sns-message-validator
 ```
 
-You aws ses user should also have the authorization to create SNS topics 
+Your AWS SES user should also have the authorization to create SNS topics.
 
 ## Usage
 
