@@ -101,7 +101,13 @@ class MailgunDriver extends MailDriver implements MailDriverContract
 
     public function getUuidFromPayload(array $payload): ?string
     {
-        return $payload['event-data']['user-variables'][$this->uuidHeaderName] ?? null;
+        $uuid = $payload['event-data']['user-variables'][$this->uuidHeaderName] ?? null;
+
+        if (is_array($uuid)) {
+            return $uuid[0] ?? null;
+        }
+
+        return $uuid;
     }
 
     protected function getTimestampFromPayload(array $payload): string
