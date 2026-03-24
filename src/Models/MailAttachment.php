@@ -60,7 +60,7 @@ class MailAttachment extends Model
 
     protected function storagePath(): Attribute
     {
-        return Attribute::make(get: fn (): string => rtrim((string) config('mails.logging.attachments.root'), '/') . '/' . $this->getKey() . '/' . $this->filename);
+        return Attribute::make(get: fn (): string => rtrim((string) config('mails.logging.attachments.root'), '/').'/'.$this->getKey().'/'.$this->filename);
     }
 
     protected function fileData(): Attribute
