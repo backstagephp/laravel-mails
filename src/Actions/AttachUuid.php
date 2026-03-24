@@ -13,15 +13,19 @@ class AttachUuid
 
     public function handle(MessageSending $messageSending): MessageSending
     {
-        $provider = $this->getProvider($messageSending);
-
-        if (! $this->shouldTrackMails($provider)) {
+        if (! config('mails.logging.enabled')) {
             return $messageSending;
         }
 
         $uuid = Str::uuid()->toString();
 
         $messageSending->message->getHeaders()->addTextHeader(config('mails.headers.uuid'), $uuid);
+
+        $provider = $this->getProvider($messageSending);
+
+        if (! $this->shouldTrackMails($provider)) {
+            return $messageSending;
+        }
 
         return MailProvider::with($provider)->attachUuidToMail($messageSending, $uuid);
     }
