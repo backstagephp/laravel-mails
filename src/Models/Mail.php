@@ -198,6 +198,16 @@ class Mail extends Model
         return $builder->whereNull('sent_at');
     }
 
+    public function scopeForUuid(Builder $builder, string $uuid): Builder
+    {
+        return $builder->where('uuid', $uuid);
+    }
+
+    public function scopeForMailClass(Builder $builder, string $mailClass): Builder
+    {
+        return $builder->where('mail_class', $mailClass);
+    }
+
     protected function status(): Attribute
     {
         return Attribute::make(get: function () {

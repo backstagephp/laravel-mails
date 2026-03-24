@@ -98,7 +98,7 @@ class LogMail
     {
         return [
             'uuid' => $this->getCustomUuid($event),
-            // 'mail_class' => $this->getMailClassHeaderValue($event),
+            'mail_class' => $event->data['__laravel_mailable'] ?? null,
             'sent_at' => $event instanceof MessageSent ? now() : null,
             'mailer' => $event->data['mailer'],
             'stream_id' => $this->getStreamId($event),
