@@ -17,7 +17,7 @@
     ],
     "require": {
         "php": "^8.2",
-        "illuminate/contracts": ">=10.0 <14.0",
+        "illuminate/contracts": "^10.0 || ^11.0 || ^12.0",
         "laravel/helpers": "^1.7.0",
         "spatie/laravel-package-tools": "^1.15.0"
     },
@@ -41,13 +41,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Backstage\\Mails\\": "src",
-            "Backstage\\Mails\\Database\\Factories\\": "database/factories"
+            "Backstage\\Mails\\Laravel\\": "src",
+            "Backstage\\Mails\\Laravel\\Database\\Factories\\": "database/factories"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Backstage\\Mails\\Tests\\": "tests"
+            "Backstage\\Mails\\Laravel\\Tests\\": "tests"
         },
         "files": [
             "helpers.php"
@@ -74,7 +74,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Backstage\\Mails\\MailsServiceProvider"
+                "Backstage\\Mails\\Laravel\\MailsServiceProvider"
             ]
         }
     },

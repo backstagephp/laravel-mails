@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Commands;
+namespace Backstage\Mails\Laravel\Commands;
 
-use Backstage\Mails\Actions\RegisterWebhooks;
+use Backstage\Mails\Laravel\Actions\RegisterWebhooks;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 

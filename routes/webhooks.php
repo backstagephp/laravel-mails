@@ -1,6 +1,6 @@
 <?php
 
-use Backstage\Mails\Controllers\WebhookController;
+use Backstage\Mails\Laravel\Controllers\WebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Actions;
+namespace Backstage\Mails\Laravel\Actions;
 
-use Backstage\Mails\Enums\Provider;
-use Backstage\Mails\Models\Mail;
-use Backstage\Mails\Shared\AsAction;
+use Backstage\Mails\Laravel\Enums\Provider;
+use Backstage\Mails\Laravel\Models\Mail;
+use Backstage\Mails\Laravel\Shared\AsAction;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Collection;
@@ -98,7 +98,7 @@ class LogMail
     {
         return [
             'uuid' => $this->getCustomUuid($event),
-            'mail_class' => $event->data['__laravel_mailable'] ?? null,
+            // 'mail_class' => $this->getMailClassHeaderValue($event),
             'sent_at' => $event instanceof MessageSent ? now() : null,
             'mailer' => $event->data['mailer'],
             'stream_id' => $this->getStreamId($event),

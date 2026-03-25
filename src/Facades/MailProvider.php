@@ -1,9 +1,9 @@
 <?php
 
-namespace Backstage\Mails\Facades;
+namespace Backstage\Mails\Laravel\Facades;
 
-use Backstage\Mails\Contracts\MailDriverContract;
-use Backstage\Mails\Contracts\MailProviderContract;
+use Backstage\Mails\Laravel\Contracts\MailDriverContract;
+use Backstage\Mails\Laravel\Contracts\MailProviderContract;
 use Illuminate\Support\Facades\Facade;
 
 /**

@@ -1,6 +1,6 @@
 <?php
 
-use Backstage\Mails\Models\Mail as MailModel;
+use Backstage\Mails\Laravel\Models\Mail as MailModel;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
 

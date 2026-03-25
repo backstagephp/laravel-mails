@@ -1,9 +1,9 @@
 <?php
 
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Enums\Provider;
-use Backstage\Mails\Models\Mail as MailModel;
-use Backstage\Mails\Models\MailEvent;
+use Backstage\Mails\Laravel\Enums\EventType;
+use Backstage\Mails\Laravel\Enums\Provider;
+use Backstage\Mails\Laravel\Models\Mail as MailModel;
+use Backstage\Mails\Laravel\Models\MailEvent;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -41,7 +41,6 @@ it('can receive incoming delivery webhook from mailgun', function (): void {
                 'transport' => 'smtp',
             ],
             'user-variables' => [
-                config('mails.headers.uuid') => $mail?->uuid,
                 'url' => [
                     'link' => 'https://example.com',
                     'title' => 'Omnivery',
@@ -160,9 +159,6 @@ it('can receive incoming hard bounce webhook from mailgun', function (): void {
                 'transport' => 'smtp',
             ],
             'recipient' => 'nosuchemail@omnivery.com',
-            'user-variables' => [
-                config('mails.headers.uuid') => $mail?->uuid,
-            ],
             'message' => [
                 'size' => 5597,
                 'headers' => [
@@ -222,9 +218,6 @@ it('can receive incoming soft bounce webhook from mailgun', function (): void {
                 'transport' => 'smtp',
             ],
             'recipient' => 'nosuchemail@omnivery.com',
-            'user-variables' => [
-                config('mails.headers.uuid') => $mail?->uuid,
-            ],
             'message' => [
                 'size' => 5597,
                 'headers' => [
@@ -361,9 +354,6 @@ it('can receive incoming open webhook from mailgun', function (): void {
             ],
             'ip' => '123.123.123.123',
             'recipient' => 'test@omnivery.com',
-            'user-variables' => [
-                config('mails.headers.uuid') => $mail?->uuid,
-            ],
             'id' => 'OTk6MTA1MDI6b3BlbmVkOjE2NDk0MDgzMTE=',
             'event' => 'opened',
             'geolocation' => [

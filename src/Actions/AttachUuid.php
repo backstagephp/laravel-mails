@@ -1,9 +1,9 @@
 <?php
 
-namespace Backstage\Mails\Actions;
+namespace Backstage\Mails\Laravel\Actions;
 
-use Backstage\Mails\Facades\MailProvider;
-use Backstage\Mails\Shared\AsAction;
+use Backstage\Mails\Laravel\Facades\MailProvider;
+use Backstage\Mails\Laravel\Shared\AsAction;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Str;
 
@@ -13,19 +13,15 @@ class AttachUuid
 
     public function handle(MessageSending $messageSending): MessageSending
     {
-        if (! config('mails.logging.enabled')) {
+        $provider = $this->getProvider($messageSending);
+
+        if (! $this->shouldTrackMails($provider)) {
             return $messageSending;
         }
 
         $uuid = Str::uuid()->toString();
 
         $messageSending->message->getHeaders()->addTextHeader(config('mails.headers.uuid'), $uuid);
-
-        $provider = $this->getProvider($messageSending);
-
-        if (! $this->shouldTrackMails($provider)) {
-            return $messageSending;
-        }
 
         return MailProvider::with($provider)->attachUuidToMail($messageSending, $uuid);
     }

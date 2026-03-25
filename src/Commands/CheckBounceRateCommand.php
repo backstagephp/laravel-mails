@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Commands;
+namespace Backstage\Mails\Laravel\Commands;
 
-use Backstage\Mails\Actions\SendHighBounceRateNotifications;
+use Backstage\Mails\Laravel\Actions\SendHighBounceRateNotifications;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 
