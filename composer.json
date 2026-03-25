@@ -68,9 +68,6 @@
             "php-http/discovery": true
         }
     },
-    "conflict": {
-        "spatie/laravel-ray": "*"
-    },
     "extra": {
         "laravel": {
             "providers": [
