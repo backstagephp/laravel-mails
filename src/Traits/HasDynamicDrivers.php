@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Traits;
+namespace Backstage\Mails\Laravel\Traits;
 
 use Illuminate\Notifications\Channels\MailChannel;
 use NotificationChannels\Discord\DiscordChannel;

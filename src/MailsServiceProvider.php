@@ -1,24 +1,24 @@
 <?php
 
-namespace Backstage\Mails;
+namespace Backstage\Mails\Laravel;
 
-use Backstage\Mails\Commands\CheckBounceRateCommand;
-use Backstage\Mails\Commands\MonitorMailCommand;
-use Backstage\Mails\Commands\PruneMailCommand;
-use Backstage\Mails\Commands\ResendMailCommand;
-use Backstage\Mails\Commands\WebhooksMailCommand;
-use Backstage\Mails\Contracts\MailProviderContract;
-use Backstage\Mails\Events\MailEvent;
-use Backstage\Mails\Events\MailHardBounced;
-use Backstage\Mails\Events\MailUnsuppressed;
-use Backstage\Mails\Listeners\AttachMailLogUuid;
-use Backstage\Mails\Listeners\LogMailEvent;
-use Backstage\Mails\Listeners\LogSendingMail;
-use Backstage\Mails\Listeners\LogSentMail;
-use Backstage\Mails\Listeners\NotifyOnBounce;
-use Backstage\Mails\Listeners\StoreMailRelations;
-use Backstage\Mails\Listeners\UnsuppressEmailAddress;
-use Backstage\Mails\Managers\MailProviderManager;
+use Backstage\Mails\Laravel\Commands\CheckBounceRateCommand;
+use Backstage\Mails\Laravel\Commands\MonitorMailCommand;
+use Backstage\Mails\Laravel\Commands\PruneMailCommand;
+use Backstage\Mails\Laravel\Commands\ResendMailCommand;
+use Backstage\Mails\Laravel\Commands\WebhooksMailCommand;
+use Backstage\Mails\Laravel\Contracts\MailProviderContract;
+use Backstage\Mails\Laravel\Events\MailEvent;
+use Backstage\Mails\Laravel\Events\MailHardBounced;
+use Backstage\Mails\Laravel\Events\MailUnsuppressed;
+use Backstage\Mails\Laravel\Listeners\AttachMailLogUuid;
+use Backstage\Mails\Laravel\Listeners\LogMailEvent;
+use Backstage\Mails\Laravel\Listeners\LogSendingMail;
+use Backstage\Mails\Laravel\Listeners\LogSentMail;
+use Backstage\Mails\Laravel\Listeners\NotifyOnBounce;
+use Backstage\Mails\Laravel\Listeners\StoreMailRelations;
+use Backstage\Mails\Laravel\Listeners\UnsuppressEmailAddress;
+use Backstage\Mails\Laravel\Managers\MailProviderManager;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Events\MessageSent;
@@ -68,7 +68,7 @@ class MailsServiceProvider extends PackageServiceProvider
      */
     protected function getMigrations(): array
     {
-        return collect(app(Filesystem::class)->files(__DIR__.'/../database/migrations'))
+        return collect(app(Filesystem::class)->files(__DIR__ . '/../database/migrations'))
             ->map(fn (SplFileInfo $file): string => str_replace('.php.stub', '', $file->getBasename()))
             ->toArray();
     }

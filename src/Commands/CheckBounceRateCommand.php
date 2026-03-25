@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Commands;
+namespace Backstage\Mails\Laravel\Commands;
 
-use Backstage\Mails\Actions\SendHighBounceRateNotifications;
+use Backstage\Mails\Laravel\Actions\SendHighBounceRateNotifications;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,7 +10,7 @@ class CheckBounceRateCommand extends Command
 {
     protected $signature = 'mail:bounce-rate';
 
-    protected $description = 'Check if the bounce rate is higher than the configured limit '.
+    protected $description = 'Check if the bounce rate is higher than the configured limit ' .
         'and send a notification if it is.';
 
     public function handle(): int

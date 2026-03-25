@@ -1,9 +1,9 @@
 <?php
 
-namespace Backstage\Mails\Models;
+namespace Backstage\Mails\Laravel\Models;
 
-use Backstage\Mails\Database\Factories\MailFactory;
-use Backstage\Mails\Events\MailLogged;
+use Backstage\Mails\Laravel\Database\Factories\MailFactory;
+use Backstage\Mails\Laravel\Events\MailLogged;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -196,16 +196,6 @@ class Mail extends Model
     public function scopeUnsent(Builder $builder): Builder
     {
         return $builder->whereNull('sent_at');
-    }
-
-    public function scopeForUuid(Builder $builder, string $uuid): Builder
-    {
-        return $builder->where('uuid', $uuid);
-    }
-
-    public function scopeForMailClass(Builder $builder, string $mailClass): Builder
-    {
-        return $builder->where('mail_class', $mailClass);
     }
 
     protected function status(): Attribute

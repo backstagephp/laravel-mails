@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Actions;
+namespace Backstage\Mails\Laravel\Actions;
 
-use Backstage\Mails\Enums\Provider;
-use Backstage\Mails\Models\Mail;
-use Backstage\Mails\Shared\AsAction;
+use Backstage\Mails\Laravel\Enums\Provider;
+use Backstage\Mails\Laravel\Models\Mail;
+use Backstage\Mails\Laravel\Shared\AsAction;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Collection;
@@ -15,7 +15,7 @@ class LogMail
 {
     use AsAction;
 
-    public function handle(MessageSending|MessageSent $event): mixed
+    public function handle(MessageSending | MessageSent $event): mixed
     {
         if (! config('mails.logging.enabled')) {
             return null;
@@ -49,14 +49,14 @@ class LogMail
         return new $model;
     }
 
-    public function getOnlyConfiguredAttributes(MessageSending|MessageSent $event): array
+    public function getOnlyConfiguredAttributes(MessageSending | MessageSent $event): array
     {
         return collect($this->getDefaultLogAttributes($event))
             ->only($this->getConfiguredAttributes())
             ->merge($this->getMandatoryAttributes($event))
             ->merge([
                 'mailer' => $event->data['mailer'],
-                'transport' => config('mail.mailers.'.$event->data['mailer'].'.transport'),
+                'transport' => config('mail.mailers.' . $event->data['mailer'] . '.transport'),
             ])
             ->toArray();
     }
@@ -66,7 +66,7 @@ class LogMail
         return (array) config('mails.logging.attributes');
     }
 
-    public function getDefaultLogAttributes(MessageSending|MessageSent $event): array
+    public function getDefaultLogAttributes(MessageSending | MessageSent $event): array
     {
         return [
             'subject' => $event->message->getSubject(),
@@ -81,7 +81,7 @@ class LogMail
         ];
     }
 
-    protected function getStreamId(MessageSending|MessageSent $event): ?string
+    protected function getStreamId(MessageSending | MessageSent $event): ?string
     {
         if ($event->data['mailer'] !== Provider::POSTMARK) {
             return null;
@@ -94,18 +94,18 @@ class LogMail
         return config('mail.mailers.postmark.message_stream_id', 'outbound');
     }
 
-    public function getMandatoryAttributes(MessageSending|MessageSent $event): array
+    public function getMandatoryAttributes(MessageSending | MessageSent $event): array
     {
         return [
             'uuid' => $this->getCustomUuid($event),
-            'mail_class' => $event->data['__laravel_mailable'] ?? null,
+            // 'mail_class' => $this->getMailClassHeaderValue($event),
             'sent_at' => $event instanceof MessageSent ? now() : null,
             'mailer' => $event->data['mailer'],
             'stream_id' => $this->getStreamId($event),
         ];
     }
 
-    protected function getCustomUuid(MessageSending|MessageSent $event): ?string
+    protected function getCustomUuid(MessageSending | MessageSent $event): ?string
     {
         if (! $event->message->getHeaders()->has(config('mails.headers.uuid'))) {
             return null;

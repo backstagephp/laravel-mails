@@ -1,11 +1,11 @@
 <?php
 
-namespace Backstage\Mails\Drivers;
+namespace Backstage\Mails\Laravel\Drivers;
 
-use Backstage\Mails\Contracts\MailDriverContract;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Enums\Provider;
-use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Laravel\Contracts\MailDriverContract;
+use Backstage\Mails\Laravel\Enums\EventType;
+use Backstage\Mails\Laravel\Enums\Provider;
+use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Http;
@@ -105,7 +105,7 @@ class PostmarkDriver extends MailDriver implements MailDriverContract
 
     public function attachUuidToMail(MessageSending $messageSending, string $uuid): MessageSending
     {
-        $messageSending->message->getHeaders()->addTextHeader('X-PM-Metadata-'.config('mails.headers.uuid'), $uuid);
+        $messageSending->message->getHeaders()->addTextHeader('X-PM-Metadata-' . config('mails.headers.uuid'), $uuid);
 
         return $messageSending;
     }
@@ -182,7 +182,7 @@ class PostmarkDriver extends MailDriver implements MailDriverContract
             ])
             ->baseUrl('https://api.postmarkapp.com/');
 
-        return $pendingRequest->post('message-streams/'.$stream_id.'/suppressions/delete', [
+        return $pendingRequest->post('message-streams/' . $stream_id . '/suppressions/delete', [
             'Suppressions' => [['emailAddress' => $address]],
         ]);
     }

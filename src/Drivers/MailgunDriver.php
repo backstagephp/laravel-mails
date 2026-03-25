@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Drivers;
+namespace Backstage\Mails\Laravel\Drivers;
 
-use Backstage\Mails\Contracts\MailDriverContract;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Enums\Provider;
+use Backstage\Mails\Laravel\Contracts\MailDriverContract;
+use Backstage\Mails\Laravel\Enums\EventType;
+use Backstage\Mails\Laravel\Enums\Provider;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Http;
@@ -83,7 +83,7 @@ class MailgunDriver extends MailDriver implements MailDriverContract
             return false;
         }
 
-        $hmac = hash_hmac('sha256', $payload['signature']['timestamp'].$payload['signature']['token'], (string) config('services.mailgun.webhook_signing_key'));
+        $hmac = hash_hmac('sha256', $payload['signature']['timestamp'] . $payload['signature']['token'], (string) config('services.mailgun.webhook_signing_key'));
 
         if (function_exists('hash_equals')) {
             return hash_equals($hmac, $payload['signature']['signature']);
@@ -148,8 +148,8 @@ class MailgunDriver extends MailDriver implements MailDriverContract
     {
         $pendingRequest = Http::asJson()
             ->withBasicAuth('api', config('services.mailgun.secret'))
-            ->baseUrl(config('services.mailgun.endpoint').'/v3/');
+            ->baseUrl(config('services.mailgun.endpoint') . '/v3/');
 
-        return $pendingRequest->delete(config('services.mailgun.domain').'/unsubscribes/'.$address);
+        return $pendingRequest->delete(config('services.mailgun.domain') . '/unsubscribes/' . $address);
     }
 }

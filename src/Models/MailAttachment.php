@@ -1,14 +1,15 @@
 <?php
 
-namespace Backstage\Mails\Models;
+namespace Backstage\Mails\Laravel\Models;
 
-use Backstage\Mails\Database\Factories\MailAttachmentFactory;
+use Backstage\Mails\Laravel\Database\Factories\MailAttachmentFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @property-read string $disk
@@ -60,7 +61,7 @@ class MailAttachment extends Model
 
     protected function storagePath(): Attribute
     {
-        return Attribute::make(get: fn (): string => rtrim((string) config('mails.logging.attachments.root'), '/').'/'.$this->getKey().'/'.$this->filename);
+        return Attribute::make(get: fn (): string => rtrim((string) config('mails.logging.attachments.root'), '/') . '/' . $this->getKey() . '/' . $this->filename);
     }
 
     protected function fileData(): Attribute
@@ -68,15 +69,29 @@ class MailAttachment extends Model
         return Attribute::make(get: fn () => Storage::disk($this->disk)->get($this->storagePath));
     }
 
-    public function downloadFileFromStorage(?string $filename = null): string
+    public function downloadFileFromStorage(?string $filename = null): StreamedResponse
     {
-        return Storage::disk($this->disk)
-            ->download(
-                $this->storagePath,
-                $filename ?? $this->filename,
-                [
-                    'Content-Type' => $this->mime,
-                ]
-            );
+        $disk = Storage::disk($this->disk);
+
+        if (! $disk->exists($this->storagePath)) {
+            abort(404);
+        }
+
+        $downloadFilename = $filename ?? $this->filename;
+
+        return response()->streamDownload(
+            function () use ($disk) {
+                $stream = $disk->readStream($this->storagePath);
+
+                if ($stream !== null) {
+                    fpassthru($stream);
+                    fclose($stream);
+                }
+            },
+            $downloadFilename,
+            [
+                'Content-Type' => $this->mime,
+            ]
+        );
     }
 }

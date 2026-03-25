@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails;
+namespace Backstage\Mails\Laravel;
 
-use Backstage\Mails\Shared\Terminal;
+use Backstage\Mails\Laravel\Shared\Terminal;
 
 if (! function_exists('console')) {
     function console(): Terminal

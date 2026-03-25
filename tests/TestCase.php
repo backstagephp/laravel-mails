@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Tests;
+namespace Backstage\Mails\Laravel\Tests;
 
-use Backstage\Mails\MailsServiceProvider;
+use Backstage\Mails\Laravel\MailsServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
@@ -18,7 +18,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName): string => 'Backstage\\Mails\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName): string => 'Backstage\\Mails\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
         );
 
         $this->loadMigrations();
@@ -26,10 +26,15 @@ class TestCase extends Orchestra
 
     protected function getPackageProviders($app): array
     {
-        return [
-            DiscordServiceProvider::class,
+        $providers = [
             MailsServiceProvider::class,
         ];
+
+        if (class_exists(DiscordServiceProvider::class)) {
+            $providers[] = DiscordServiceProvider::class;
+        }
+
+        return $providers;
     }
 
     /**
@@ -57,7 +62,7 @@ class TestCase extends Orchestra
     protected function loadMigrations(): void
     {
         $filesystem = new Filesystem;
-        $migrationFiles = $filesystem->files(__DIR__.'/../database/migrations/');
+        $migrationFiles = $filesystem->files(__DIR__ . '/../database/migrations/');
 
         // Sorting to ensure migrations run in the correct order
         usort($migrationFiles, fn ($a, $b): int => strcmp((string) $a->getFilename(), (string) $b->getFilename()));

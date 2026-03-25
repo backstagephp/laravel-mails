@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Listeners;
+namespace Backstage\Mails\Laravel\Listeners;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Mail\Events\MessageSending;
@@ -36,7 +36,7 @@ class StoreMailRelations
         );
     }
 
-    protected function getAssociatedModels(Email $email): array|false
+    protected function getAssociatedModels(Email $email): array | false
     {
         $encrypted = $this->getHeaderBody(
             $email,

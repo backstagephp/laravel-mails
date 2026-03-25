@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Controllers;
+namespace Backstage\Mails\Laravel\Controllers;
 
-use Backstage\Mails\Jobs\ProcessWebhookJob;
+use Backstage\Mails\Laravel\Jobs\ProcessWebhookJob;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 

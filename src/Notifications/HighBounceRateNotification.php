@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Notifications;
+namespace Backstage\Mails\Laravel\Notifications;
 
-use Backstage\Mails\Traits\HasDynamicDrivers;
+use Backstage\Mails\Laravel\Traits\HasDynamicDrivers;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;

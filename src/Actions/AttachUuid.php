@@ -1,9 +1,9 @@
 <?php
 
-namespace Backstage\Mails\Actions;
+namespace Backstage\Mails\Laravel\Actions;
 
-use Backstage\Mails\Facades\MailProvider;
-use Backstage\Mails\Shared\AsAction;
+use Backstage\Mails\Laravel\Facades\MailProvider;
+use Backstage\Mails\Laravel\Shared\AsAction;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Str;
 
@@ -13,7 +13,9 @@ class AttachUuid
 
     public function handle(MessageSending $messageSending): MessageSending
     {
-        if (! config('mails.logging.enabled')) {
+        $provider = $this->getProvider($messageSending);
+
+        if (! $this->shouldTrackMails($provider)) {
             return $messageSending;
         }
 
@@ -21,18 +23,12 @@ class AttachUuid
 
         $messageSending->message->getHeaders()->addTextHeader(config('mails.headers.uuid'), $uuid);
 
-        $provider = $this->getProvider($messageSending);
-
-        if (! $this->shouldTrackMails($provider)) {
-            return $messageSending;
-        }
-
         return MailProvider::with($provider)->attachUuidToMail($messageSending, $uuid);
     }
 
     public function getProvider(MessageSending $messageSending): string
     {
-        return config('mail.mailers.'.$messageSending->data['mailer'].'.transport') ?? $messageSending->data['mailer'];
+        return config('mail.mailers.' . $messageSending->data['mailer'] . '.transport') ?? $messageSending->data['mailer'];
     }
 
     public function shouldTrackMails(string $provider): bool
@@ -43,7 +39,7 @@ class AttachUuid
 
     public function driverExistsForProvider(string $provider): bool
     {
-        return class_exists('Backstage\\Mails\\Drivers\\'.ucfirst($provider).'Driver');
+        return class_exists('Backstage\\Mails\\Drivers\\' . ucfirst($provider) . 'Driver');
     }
 
     public function trackingEnabled(): bool
