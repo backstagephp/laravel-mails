@@ -1,9 +1,9 @@
 <?php
 
-namespace Backstage\Mails\Listeners;
+namespace Backstage\Mails\Laravel\Listeners;
 
-use Backstage\Mails\Events\MailEvent;
-use Backstage\Mails\Facades\MailProvider;
+use Backstage\Mails\Laravel\Events\MailEvent;
+use Backstage\Mails\Laravel\Facades\MailProvider;
 
 class LogMailEvent
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Listeners;
+namespace Backstage\Mails\Laravel\Listeners;
 
-use Backstage\Mails\Actions\AttachUuid;
+use Backstage\Mails\Laravel\Actions\AttachUuid;
 use Illuminate\Mail\Events\MessageSending;
 
 class AttachMailLogUuid

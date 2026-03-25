@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Database\Factories;
+namespace Backstage\Mails\Laravel\Database\Factories;
 
-use Backstage\Mails\Models\MailAttachment;
+use Backstage\Mails\Laravel\Models\MailAttachment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MailAttachmentFactory extends Factory

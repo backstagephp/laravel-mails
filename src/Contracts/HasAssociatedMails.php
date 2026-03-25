@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Contracts;
+namespace Backstage\Mails\Laravel\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;

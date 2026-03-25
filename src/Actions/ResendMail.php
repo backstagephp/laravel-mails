@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Actions;
+namespace Backstage\Mails\Laravel\Actions;
 
-use Backstage\Mails\Jobs\ResendMailJob;
-use Backstage\Mails\Models\Mail as Mailable;
-use Backstage\Mails\Shared\AsAction;
+use Backstage\Mails\Laravel\Jobs\ResendMailJob;
+use Backstage\Mails\Laravel\Models\Mail as Mailable;
+use Backstage\Mails\Laravel\Shared\AsAction;
 
 class ResendMail
 {

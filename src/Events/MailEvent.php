@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Events;
+namespace Backstage\Mails\Laravel\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;

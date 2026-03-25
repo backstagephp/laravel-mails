@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Contracts;
+namespace Backstage\Mails\Laravel\Contracts;
 
 interface MailProviderContract
 {

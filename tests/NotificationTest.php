@@ -1,7 +1,7 @@
 <?php
 
-use Backstage\Mails\Models\Mail;
-use Backstage\Mails\Notifications\BounceNotification;
+use Backstage\Mails\Laravel\Models\Mail;
+use Backstage\Mails\Laravel\Notifications\BounceNotification;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(fn () => config([

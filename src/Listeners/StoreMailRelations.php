@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Listeners;
+namespace Backstage\Mails\Laravel\Listeners;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Mail\Events\MessageSending;

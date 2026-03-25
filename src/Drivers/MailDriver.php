@@ -1,9 +1,9 @@
 <?php
 
-namespace Backstage\Mails\Drivers;
+namespace Backstage\Mails\Laravel\Drivers;
 
-use Backstage\Mails\Exceptions\LaravelMailException;
-use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Laravel\Exceptions\LaravelMailException;
+use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Support\Str;
 
 abstract class MailDriver
