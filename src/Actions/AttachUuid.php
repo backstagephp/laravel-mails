@@ -39,7 +39,7 @@ class AttachUuid
 
     public function driverExistsForProvider(string $provider): bool
     {
-        return class_exists('Backstage\\Mails\\Drivers\\'.ucfirst($provider).'Driver');
+        return class_exists('Backstage\\Mails\\Laravel\\Drivers\\'.ucfirst($provider).'Driver');
     }
 
     public function trackingEnabled(): bool
