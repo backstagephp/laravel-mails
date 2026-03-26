@@ -3,6 +3,7 @@
 use Backstage\Mails\Laravel\Models\Mail as MailModel;
 use Backstage\Mails\Laravel\Tests\Fixtures\TestModel;
 use Backstage\Mails\Laravel\Tests\Fixtures\TestNotification;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -71,7 +72,7 @@ it('sends a notification without associated models', function () {
     expect($mail->subject)->toBe('Test Notification');
 
     expect(
-        \Illuminate\Support\Facades\DB::table('mailables')
+        DB::table('mailables')
             ->where('mail_id', $mail->id)
             ->exists()
     )->toBeFalse();
