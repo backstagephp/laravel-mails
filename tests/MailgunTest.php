@@ -41,6 +41,7 @@ it('can receive incoming delivery webhook from mailgun', function (): void {
                 'transport' => 'smtp',
             ],
             'user-variables' => [
+                config('mails.headers.uuid') => $mail?->uuid,
                 'url' => [
                     'link' => 'https://example.com',
                     'title' => 'Omnivery',
@@ -152,6 +153,9 @@ it('can receive incoming hard bounce webhook from mailgun', function (): void {
         'event-data' => [
             'event' => 'failed',
             'severity' => 'permanent',
+            'user-variables' => [
+                config('mails.headers.uuid') => $mail?->uuid,
+            ],
             'envelope' => [
                 'sender' => 'bounce-d9bee8ac-b0e7-11ec-8086-57d93b186f66@notify.omnivery.com',
                 'sending-ip' => '185.136.201.130',
@@ -211,6 +215,9 @@ it('can receive incoming soft bounce webhook from mailgun', function (): void {
         'event-data' => [
             'event' => 'failed',
             'severity' => 'temporary',
+            'user-variables' => [
+                config('mails.headers.uuid') => $mail?->uuid,
+            ],
             'envelope' => [
                 'sender' => 'bounce-d9bee8ac-b0e7-11ec-8086-57d93b186f66@notify.omnivery.com',
                 'sending-ip' => '185.136.201.130',
@@ -332,6 +339,9 @@ it('can receive incoming open webhook from mailgun', function (): void {
         'event-data' => [
             'recipient-domain' => 'omnivery.com',
             'timestamp' => 1649408305,
+            'user-variables' => [
+                config('mails.headers.uuid') => $mail?->uuid,
+            ],
             'envelope' => [
                 'targets' => 'test@omnivery.com',
             ],

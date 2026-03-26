@@ -18,7 +18,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName): string => 'Backstage\\Mails\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName): string => 'Backstage\\Mails\\Laravel\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
 
         $this->loadMigrations();
