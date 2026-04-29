@@ -9,6 +9,7 @@ use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Mailer\Header\TagHeader;
 use Symfony\Component\Mime\Address;
 
 class LogMail
@@ -77,8 +78,7 @@ class LogMail
             'bcc' => $this->getAddressesValue($event->message->getBcc()),
             'html' => $event->message->getHtmlBody(),
             'text' => $event->message->getTextBody(),
-            'tags' => collect($event->message->getHeaders()->all())
-                ->filter(fn ($header) => $header instanceof TagHeader)
+            'tags' => collect($event->message->getHeaders()->all('X-Tag'))
                 ->map(fn (TagHeader $header) => $header->getValue())
                 ->values()
                 ->all(),

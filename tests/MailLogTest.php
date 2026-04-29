@@ -38,10 +38,10 @@ it('logs tags from a mailable envelope', function (): void {
     Mail::to('mark@ux.nl')
         ->send(new TaggedMailable(['Campaign:42', 'audience:newsletter']));
 
-    assertDatabaseHas((new MailModel)->getTable(), [
-        'subject' => 'Tagged subject',
-        'tags' => json_encode(['Campaign:42', 'audience:newsletter']),
-    ]);
+    $mail = MailModel::firstWhere('subject', 'Tagged subject');
+
+    expect($mail)->not->toBeNull()
+        ->and($mail->tags)->toBe(['Campaign:42', 'audience:newsletter']);
 });
 
 it('logs an empty tag list when the envelope has no tags', function (): void {
@@ -52,8 +52,20 @@ it('logs an empty tag list when the envelope has no tags', function (): void {
 
     Mail::to('mark@ux.nl')->send(new TaggedMailable([]));
 
-    assertDatabaseHas((new MailModel)->getTable(), [
-        'subject' => 'Tagged subject',
-        'tags' => json_encode([]),
-    ]);
+    $mail = MailModel::firstWhere('subject', 'Tagged subject');
+
+    expect($mail)->not->toBeNull()
+        ->and($mail->tags)->toBe([]);
+});
+
+it('does not log tags when tags is not in the configured attributes', function (): void {
+    config()->set('mails.logging.attributes', ['subject', 'to']);
+
+    Mail::to('mark@ux.nl')
+        ->send(new TaggedMailable(['Campaign:42']));
+
+    $mail = MailModel::firstWhere('subject', 'Tagged subject');
+
+    expect($mail)->not->toBeNull()
+        ->and($mail->tags)->toBeNull();
 });
