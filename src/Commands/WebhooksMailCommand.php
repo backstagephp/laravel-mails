@@ -16,7 +16,7 @@ class WebhooksMailCommand extends Command implements PromptsForMissingInput
     {
         (new RegisterWebhooks)(
             provider: $this->argument('provider'),
-            components: $this->components
+            factory: $this->components
         );
 
         return self::SUCCESS;

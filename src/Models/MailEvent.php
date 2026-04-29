@@ -70,8 +70,8 @@ class MailEvent extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (MailEvent $mailEvent): void {
-            event(MailEventLogged::class, $mailEvent);
+        static::created(function (MailEvent $mailEvent): void {
+            MailEventLogged::dispatch($mailEvent);
 
             $eventClass = $mailEvent->eventClass;
 
@@ -98,6 +98,6 @@ class MailEvent extends Model
 
     protected function eventClass(): Attribute
     {
-        return Attribute::make(get: fn (): string => 'Backstage\Mails\Events\Mail' . Str::studly($this->type->value));
+        return Attribute::make(get: fn (): string => 'Backstage\Mails\Events\Mail'.Str::studly($this->type->value));
     }
 }
