@@ -77,7 +77,11 @@ class LogMail
             'bcc' => $this->getAddressesValue($event->message->getBcc()),
             'html' => $event->message->getHtmlBody(),
             'text' => $event->message->getTextBody(),
-            'tags' => collect($event->message->getHeaders()->all('X-tag'))->map(fn ($tag) => $tag->getValue())->toArray(),
+            'tags' => collect($event->message->getHeaders()->all())
+                ->filter(fn ($header) => $header instanceof TagHeader)
+                ->map(fn (TagHeader $header) => $header->getValue())
+                ->values()
+                ->all(),
         ];
     }
 
