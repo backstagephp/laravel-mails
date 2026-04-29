@@ -62,6 +62,7 @@ return [
             'bcc',
             'html',
             'text',
+            'tags',
         ],
 
         // Encrypt all attributes saved to database
