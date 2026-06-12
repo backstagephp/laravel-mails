@@ -1,9 +1,9 @@
 <?php
 
-namespace Backstage\Mails\Models;
+namespace Backstage\Mails\Laravel\Models;
 
-use Backstage\Mails\Database\Factories\MailFactory;
-use Backstage\Mails\Events\MailLogged;
+use Backstage\Mails\Laravel\Database\Factories\MailFactory;
+use Backstage\Mails\Laravel\Events\MailLogged;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;

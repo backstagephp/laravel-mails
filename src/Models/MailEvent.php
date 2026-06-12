@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Models;
+namespace Backstage\Mails\Laravel\Models;
 
-use Backstage\Mails\Database\Factories\MailEventFactory;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Events\MailEventLogged;
+use Backstage\Mails\Laravel\Database\Factories\MailEventFactory;
+use Backstage\Mails\Laravel\Enums\EventType;
+use Backstage\Mails\Laravel\Events\MailEventLogged;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -98,6 +98,6 @@ class MailEvent extends Model
 
     protected function eventClass(): Attribute
     {
-        return Attribute::make(get: fn (): string => 'Backstage\Mails\Events\Mail' . Str::studly($this->type->value));
+        return Attribute::make(get: fn (): string => 'Backstage\Mails\Laravel\Events\Mail' . Str::studly($this->type->value));
     }
 }

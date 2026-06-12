@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Shared;
+namespace Backstage\Mails\Laravel\Shared;
 
 use Illuminate\Console\Command;
 use Illuminate\Console\OutputStyle;

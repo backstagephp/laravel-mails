@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Shared;
+namespace Backstage\Mails\Laravel\Shared;
 
 trait AsAction
 {

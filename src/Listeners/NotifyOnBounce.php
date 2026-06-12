@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Listeners;
+namespace Backstage\Mails\Laravel\Listeners;
 
-use Backstage\Mails\Events\MailHardBounced;
-use Backstage\Mails\Notifications\BounceNotification;
-use Backstage\Mails\Traits\SendsNotifications;
+use Backstage\Mails\Laravel\Events\MailHardBounced;
+use Backstage\Mails\Laravel\Notifications\BounceNotification;
+use Backstage\Mails\Laravel\Traits\SendsNotifications;
 
 class NotifyOnBounce
 {

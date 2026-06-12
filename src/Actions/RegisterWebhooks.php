@@ -1,9 +1,9 @@
 <?php
 
-namespace Backstage\Mails\Actions;
+namespace Backstage\Mails\Laravel\Actions;
 
-use Backstage\Mails\Facades\MailProvider;
-use Backstage\Mails\Shared\AsAction;
+use Backstage\Mails\Laravel\Facades\MailProvider;
+use Backstage\Mails\Laravel\Shared\AsAction;
 use Illuminate\Console\Concerns\InteractsWithIO;
 use Illuminate\Console\View\Components\Factory;
 

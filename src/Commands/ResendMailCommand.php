@@ -1,9 +1,9 @@
 <?php
 
-namespace Backstage\Mails\Commands;
+namespace Backstage\Mails\Laravel\Commands;
 
-use Backstage\Mails\Jobs\ResendMailJob;
-use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Laravel\Jobs\ResendMailJob;
+use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 

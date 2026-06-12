@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Jobs;
+namespace Backstage\Mails\Laravel\Jobs;
 
-use Backstage\Mails\Models\Mail as Mailable;
+use Backstage\Mails\Laravel\Models\Mail as Mailable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

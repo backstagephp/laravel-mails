@@ -1,7 +1,7 @@
 <?php
 
-use Backstage\Mails\Models\Mail as MailModel;
-use Backstage\Mails\Tests\Fixtures\TaggedMailable;
+use Backstage\Mails\Laravel\Models\Mail as MailModel;
+use Backstage\Mails\Laravel\Tests\Fixtures\TaggedMailable;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
 

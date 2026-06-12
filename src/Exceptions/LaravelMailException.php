@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Exceptions;
+namespace Backstage\Mails\Laravel\Exceptions;
 
 use Exception;
 

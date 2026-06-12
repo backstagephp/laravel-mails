@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Models;
+namespace Backstage\Mails\Laravel\Models;
 
-use Backstage\Mails\Database\Factories\MailAttachmentFactory;
+use Backstage\Mails\Laravel\Database\Factories\MailAttachmentFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

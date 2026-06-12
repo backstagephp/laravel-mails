@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Managers;
+namespace Backstage\Mails\Laravel\Managers;
 
-use Backstage\Mails\Drivers\MailgunDriver;
-use Backstage\Mails\Drivers\PostmarkDriver;
-use Backstage\Mails\Drivers\ResendDriver;
+use Backstage\Mails\Laravel\Drivers\MailgunDriver;
+use Backstage\Mails\Laravel\Drivers\PostmarkDriver;
+use Backstage\Mails\Laravel\Drivers\ResendDriver;
 use Illuminate\Support\Manager;
 
 class MailProviderManager extends Manager

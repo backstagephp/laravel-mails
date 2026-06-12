@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Drivers;
+namespace Backstage\Mails\Laravel\Drivers;
 
-use Backstage\Mails\Contracts\MailDriverContract;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Enums\Provider;
+use Backstage\Mails\Laravel\Contracts\MailDriverContract;
+use Backstage\Mails\Laravel\Enums\EventType;
+use Backstage\Mails\Laravel\Enums\Provider;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Http;

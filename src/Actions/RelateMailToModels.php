@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Actions;
+namespace Backstage\Mails\Laravel\Actions;
 
 class RelateMailToModels
 {

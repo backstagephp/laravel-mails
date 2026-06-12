@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Enums;
+namespace Backstage\Mails\Laravel\Enums;
 
 enum Provider: string
 {

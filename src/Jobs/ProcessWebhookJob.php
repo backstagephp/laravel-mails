@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Jobs;
+namespace Backstage\Mails\Laravel\Jobs;
 
-use Backstage\Mails\Enums\Provider;
-use Backstage\Mails\Events\MailEvent;
-use Backstage\Mails\Facades\MailProvider;
+use Backstage\Mails\Laravel\Enums\Provider;
+use Backstage\Mails\Laravel\Events\MailEvent;
+use Backstage\Mails\Laravel\Facades\MailProvider;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

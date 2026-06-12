@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Database\Factories;
+namespace Backstage\Mails\Laravel\Database\Factories;
 
-use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MailFactory extends Factory

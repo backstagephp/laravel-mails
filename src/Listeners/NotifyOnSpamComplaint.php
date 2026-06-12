@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Listeners;
+namespace Backstage\Mails\Laravel\Listeners;
 
-use Backstage\Mails\Events\MailComplained;
-use Backstage\Mails\Notifications\SpamComplaintNotification;
-use Backstage\Mails\Traits\SendsNotifications;
+use Backstage\Mails\Laravel\Events\MailComplained;
+use Backstage\Mails\Laravel\Notifications\SpamComplaintNotification;
+use Backstage\Mails\Laravel\Traits\SendsNotifications;
 
 class NotifyOnSpamComplaint
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Traits;
+namespace Backstage\Mails\Laravel\Traits;
 
-use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;

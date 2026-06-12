@@ -1,6 +1,6 @@
 <?php
 
-use Backstage\Mails\Tests\TestCase;
+use Backstage\Mails\Laravel\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(TestCase::class)

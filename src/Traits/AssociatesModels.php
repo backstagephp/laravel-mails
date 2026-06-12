@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Traits;
+namespace Backstage\Mails\Laravel\Traits;
 
-use Backstage\Mails\Contracts\HasAssociatedMails;
+use Backstage\Mails\Laravel\Contracts\HasAssociatedMails;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Arr;

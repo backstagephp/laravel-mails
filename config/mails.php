@@ -1,8 +1,8 @@
 <?php
 
-use Backstage\Mails\Models\Mail;
-use Backstage\Mails\Models\MailAttachment;
-use Backstage\Mails\Models\MailEvent;
+use Backstage\Mails\Laravel\Models\Mail;
+use Backstage\Mails\Laravel\Models\MailAttachment;
+use Backstage\Mails\Laravel\Models\MailEvent;
 
 return [
 

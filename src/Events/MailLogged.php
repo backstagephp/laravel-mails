@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Events;
+namespace Backstage\Mails\Laravel\Events;
 
-use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;

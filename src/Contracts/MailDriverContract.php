@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Contracts;
+namespace Backstage\Mails\Laravel\Contracts;
 
-use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 

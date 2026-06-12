@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\Mails\Tests;
+namespace Backstage\Mails\Laravel\Tests;
 
-use Backstage\Mails\MailsServiceProvider;
+use Backstage\Mails\Laravel\MailsServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;

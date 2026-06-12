@@ -1,10 +1,10 @@
 <?php
 
-namespace Backstage\Mails\Actions;
+namespace Backstage\Mails\Laravel\Actions;
 
-use Backstage\Mails\Notifications\HighBounceRateNotification;
-use Backstage\Mails\Shared\AsAction;
-use Backstage\Mails\Traits\SendsNotifications;
+use Backstage\Mails\Laravel\Notifications\HighBounceRateNotification;
+use Backstage\Mails\Laravel\Shared\AsAction;
+use Backstage\Mails\Laravel\Traits\SendsNotifications;
 
 class SendHighBounceRateNotifications
 {
