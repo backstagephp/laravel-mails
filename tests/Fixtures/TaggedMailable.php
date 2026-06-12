@@ -1,6 +1,6 @@
 <?php
 
-namespace Backstage\Mails\Tests\Fixtures;
+namespace  Backstage\Mails\Laravel\Tests\Fixtures;
 
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
