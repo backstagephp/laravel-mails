@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) vormkracht10 <mark@vormkracht10.nl>
+Copyright (c) vormkracht10 <mark@backstagephp.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

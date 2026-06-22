@@ -11,7 +11,12 @@
     "authors": [
         {
             "name": "Mark van Eijk",
-            "email": "mark@vormkracht10.nl",
+            "email": "mark@backstagephp.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Bas van Dinther",
+            "email": "bas@backstagephp.com",
             "role": "Developer"
         }
     ],

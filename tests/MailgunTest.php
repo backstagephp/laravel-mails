@@ -13,7 +13,7 @@ use function Pest\Laravel\post;
 
 it('can receive incoming delivery webhook from mailgun', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -79,7 +79,7 @@ it('can receive incoming delivery webhook from mailgun', function (): void {
 
 it('can receive incoming accept webhook from mailgun', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -137,7 +137,7 @@ it('can receive incoming accept webhook from mailgun', function (): void {
 
 it('can receive incoming hard bounce webhook from mailgun', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -196,7 +196,7 @@ it('can receive incoming hard bounce webhook from mailgun', function (): void {
 
 it('can receive incoming soft bounce webhook from mailgun', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -255,7 +255,7 @@ it('can receive incoming soft bounce webhook from mailgun', function (): void {
 
 it('can receive incoming complaint webhook from mailgun', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -312,7 +312,7 @@ it('can receive incoming complaint webhook from mailgun', function (): void {
 
 it('can receive incoming open webhook from mailgun', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -373,7 +373,7 @@ it('can receive incoming open webhook from mailgun', function (): void {
 
 it('can receive incoming click webhook from mailgun', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -438,7 +438,7 @@ it('can receive incoming click webhook from mailgun', function (): void {
 
 it('can receive incoming unsubscribe webhook from mailgun', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')

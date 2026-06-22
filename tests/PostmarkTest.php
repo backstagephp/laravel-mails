@@ -13,7 +13,7 @@ use function Pest\Laravel\post;
 
 it('can receive incoming delivery webhook from postmark', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -32,7 +32,7 @@ it('can receive incoming delivery webhook from postmark', function (): void {
         'Metadata' => [
             config('mails.headers.uuid') => $mail?->uuid,
         ],
-        'Recipient' => 'mark@ux.nl',
+        'Recipient' => 'mark@backstagephp.com',
         'RecordType' => 'Delivery',
         'ServerID' => 23,
         'Tag' => 'welcome-email',
@@ -45,7 +45,7 @@ it('can receive incoming delivery webhook from postmark', function (): void {
 
 it('can receive incoming hard bounce webhook from postmark', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -88,7 +88,7 @@ it('can receive incoming hard bounce webhook from postmark', function (): void {
 
 it('can receive incoming soft bounce webhook from postmark', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -131,7 +131,7 @@ it('can receive incoming soft bounce webhook from postmark', function (): void {
 
 it('can receive incoming complaint webhook from postmark', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -174,7 +174,7 @@ it('can receive incoming complaint webhook from postmark', function (): void {
 
 it('can receive incoming open webhook from postmark', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -228,7 +228,7 @@ it('can receive incoming open webhook from postmark', function (): void {
 
 it('can receive incoming click webhook from postmark', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -283,7 +283,7 @@ it('can receive incoming click webhook from postmark', function (): void {
 
 it('can receive incoming subscription change webhook from postmark', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')

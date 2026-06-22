@@ -9,7 +9,7 @@ use function Pest\Laravel\assertDatabaseHas;
 
 it('can log sent mails', function (): void {
     Mail::send([], [], function (Message $message): void {
-        $message->to('mark@ux.nl')
+        $message->to('mark@backstagephp.com')
             ->from('local@computer.nl')
             ->cc('cc@vk10.nl')
             ->bcc('bcc@vk10.nl')
@@ -20,7 +20,7 @@ it('can log sent mails', function (): void {
 
     assertDatabaseHas((new MailModel)->getTable(), [
         'from' => json_encode(['local@computer.nl' => null]),
-        'to' => json_encode(['mark@ux.nl' => null]),
+        'to' => json_encode(['mark@backstagephp.com' => null]),
         'cc' => json_encode(['cc@vk10.nl' => null]),
         'bcc' => json_encode(['bcc@vk10.nl' => null]),
         'subject' => 'Test',
@@ -35,7 +35,7 @@ it('logs tags from a mailable envelope', function (): void {
         ['tags'],
     ));
 
-    Mail::to('mark@ux.nl')
+    Mail::to('mark@backstagephp.com')
         ->send(new TaggedMailable(['Campaign:42', 'audience:newsletter']));
 
     $mail = MailModel::firstWhere('subject', 'Tagged subject');
@@ -50,7 +50,7 @@ it('logs an empty tag list when the envelope has no tags', function (): void {
         ['tags'],
     ));
 
-    Mail::to('mark@ux.nl')->send(new TaggedMailable([]));
+    Mail::to('mark@backstagephp.com')->send(new TaggedMailable([]));
 
     $mail = MailModel::firstWhere('subject', 'Tagged subject');
 
@@ -61,7 +61,7 @@ it('logs an empty tag list when the envelope has no tags', function (): void {
 it('does not log tags when tags is not in the configured attributes', function (): void {
     config()->set('mails.logging.attributes', ['subject', 'to']);
 
-    Mail::to('mark@ux.nl')
+    Mail::to('mark@backstagephp.com')
         ->send(new TaggedMailable(['Campaign:42']));
 
     $mail = MailModel::firstWhere('subject', 'Tagged subject');
