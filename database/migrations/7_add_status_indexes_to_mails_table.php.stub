@@ -1,0 +1,40 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Columns used to count/filter mails by status on the index page
+     * (tab badges + stats widget). Without indexes every page load runs a
+     * full table scan per status, which does not scale past ~100k rows.
+     */
+    protected array $columns = [
+        'delivered_at',
+        'last_opened_at',
+        'last_clicked_at',
+        'complained_at',
+        'soft_bounced_at',
+        'hard_bounced_at',
+    ];
+
+    public function up(): void
+    {
+        Schema::table(config('mails.database.tables.mails'), function (Blueprint $table) {
+            foreach ($this->columns as $column) {
+                $table->index($column);
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table(config('mails.database.tables.mails'), function (Blueprint $table) {
+            foreach ($this->columns as $column) {
+                $table->dropIndex([$column]);
+            }
+        });
+    }
+};

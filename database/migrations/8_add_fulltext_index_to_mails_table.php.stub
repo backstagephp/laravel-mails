@@ -1,0 +1,46 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Columns searched from the mails index. A FULLTEXT index lets MySQL/
+     * PostgreSQL match against them without the unindexed `LIKE %term%`
+     * full table scan that does not scale past ~100k rows.
+     */
+    protected array $columns = ['subject', 'html', 'text'];
+
+    public function up(): void
+    {
+        if (! $this->supportsFullText()) {
+            return;
+        }
+
+        Schema::table(config('mails.database.tables.mails'), function (Blueprint $table) {
+            $table->fullText($this->columns, 'mails_fulltext');
+        });
+    }
+
+    public function down(): void
+    {
+        if (! $this->supportsFullText()) {
+            return;
+        }
+
+        Schema::table(config('mails.database.tables.mails'), function (Blueprint $table) {
+            $table->dropFullText('mails_fulltext');
+        });
+    }
+
+    protected function supportsFullText(): bool
+    {
+        return in_array(
+            Schema::getConnection()->getDriverName(),
+            ['mysql', 'mariadb', 'pgsql'],
+            true,
+        );
+    }
+};
