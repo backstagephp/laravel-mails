@@ -134,28 +134,31 @@ class PostmarkDriver extends MailDriver implements MailDriverContract
             EventType::SOFT_BOUNCED->value => ['RecordType' => 'Bounce', 'Type' => 'SoftBounce'],
             EventType::UNSUBSCRIBED->value => ['RecordType' => 'SubscriptionChange'],
 
-            // Others
-            EventType::TRANSIENT->value => ['RecordType' => 'Transient'],
+            // Subscription changes
             EventType::UNSUBSCRIBE->value => ['RecordType' => 'SubscriptionChange', 'Type' => 'Unsubscribe'],
             EventType::SUBSCRIBE->value => ['RecordType' => 'SubscriptionChange', 'Type' => 'Subscribe'],
-            EventType::AUTO_RESPONDER->value => ['RecordType' => 'AutoResponder'],
-            EventType::ADDRESS_CHANGE->value => ['RecordType' => 'AddressChange'],
-            EventType::DNS_ERROR->value => ['RecordType' => 'DNSError'],
-            EventType::SPAM_NOTIFICATION->value => ['RecordType' => 'SpamNotification'],
-            EventType::OPEN_RELAY_TEST->value => ['RecordType' => 'OpenRelayTest'],
-            EventType::SOFT_BOUNCE->value => ['RecordType' => 'SoftBounce'],
-            EventType::VIRUS_NOTIFICATION->value => ['RecordType' => 'VirusNotification'],
-            EventType::CHALLENGE_VERIFICATION->value => ['RecordType' => 'ChallengeVerification'],
-            EventType::BAD_EMAIL_ADDRESS->value => ['RecordType' => 'BadEmailAddress'],
-            EventType::SPAM_COMPLAINT->value => ['RecordType' => 'SpamComplaint'],
-            EventType::MANUALLY_DEACTIVATED->value => ['RecordType' => 'ManuallyDeactivated'],
-            EventType::UNCONFIRMED->value => ['RecordType' => 'Unconfirmed'],
-            EventType::BLOCKED->value => ['RecordType' => 'Blocked'],
-            EventType::SMTP_API_ERROR->value => ['RecordType' => 'SMTPAPIError'],
-            EventType::INBOUND_ERROR->value => ['RecordType' => 'InboundError'],
-            EventType::DMARC_POLICY->value => ['RecordType' => 'DMARCPolicy'],
-            EventType::TEMPLATE_RENDERING_FAILED->value => ['RecordType' => 'TemplateRenderingFailed'],
-            EventType::UNKNOWN->value => ['RecordType' => 'Unknown'],
+
+            // Bounce subtypes: Postmark delivers these with RecordType "Bounce" and the
+            // specific kind in the "Type" field (see https://postmarkapp.com/developer/api/bounce-api#bounce-types).
+            EventType::TRANSIENT->value => ['RecordType' => 'Bounce', 'Type' => 'Transient'],
+            EventType::AUTO_RESPONDER->value => ['RecordType' => 'Bounce', 'Type' => 'AutoResponder'],
+            EventType::ADDRESS_CHANGE->value => ['RecordType' => 'Bounce', 'Type' => 'AddressChange'],
+            EventType::DNS_ERROR->value => ['RecordType' => 'Bounce', 'Type' => 'DnsError'],
+            EventType::SPAM_NOTIFICATION->value => ['RecordType' => 'Bounce', 'Type' => 'SpamNotification'],
+            EventType::OPEN_RELAY_TEST->value => ['RecordType' => 'Bounce', 'Type' => 'OpenRelayTest'],
+            EventType::SOFT_BOUNCE->value => ['RecordType' => 'Bounce', 'Type' => 'SoftBounce'],
+            EventType::VIRUS_NOTIFICATION->value => ['RecordType' => 'Bounce', 'Type' => 'VirusNotification'],
+            EventType::CHALLENGE_VERIFICATION->value => ['RecordType' => 'Bounce', 'Type' => 'ChallengeVerification'],
+            EventType::BAD_EMAIL_ADDRESS->value => ['RecordType' => 'Bounce', 'Type' => 'BadEmailAddress'],
+            EventType::SPAM_COMPLAINT->value => ['RecordType' => 'Bounce', 'Type' => 'SpamComplaint'],
+            EventType::MANUALLY_DEACTIVATED->value => ['RecordType' => 'Bounce', 'Type' => 'ManuallyDeactivated'],
+            EventType::UNCONFIRMED->value => ['RecordType' => 'Bounce', 'Type' => 'Unconfirmed'],
+            EventType::BLOCKED->value => ['RecordType' => 'Bounce', 'Type' => 'Blocked'],
+            EventType::SMTP_API_ERROR->value => ['RecordType' => 'Bounce', 'Type' => 'SMTPApiError'],
+            EventType::INBOUND_ERROR->value => ['RecordType' => 'Bounce', 'Type' => 'InboundError'],
+            EventType::DMARC_POLICY->value => ['RecordType' => 'Bounce', 'Type' => 'DMARCPolicy'],
+            EventType::TEMPLATE_RENDERING_FAILED->value => ['RecordType' => 'Bounce', 'Type' => 'TemplateRenderingFailed'],
+            EventType::UNKNOWN->value => ['RecordType' => 'Bounce', 'Type' => 'Unknown'],
         ];
     }
 

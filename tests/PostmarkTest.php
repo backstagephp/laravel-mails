@@ -129,6 +129,48 @@ it('can receive incoming soft bounce webhook from postmark', function (): void {
     ]);
 });
 
+it('can receive incoming transient bounce webhook from postmark', function (): void {
+    Mail::send([], [], function (Message $message): void {
+        $message->to('mark@vormkracht10.nl')
+            ->from('local@computer.nl')
+            ->cc('cc@vk10.nl')
+            ->bcc('bcc@vk10.nl')
+            ->subject('Test')
+            ->text('Text')
+            ->html('<p>HTML</p>');
+    });
+
+    $mail = MailModel::latest()->first();
+
+    post(URL::signedRoute('mails.webhook', ['provider' => Provider::POSTMARK]), [
+        'BouncedAt' => '2026-06-30T04:00:56Z',
+        'CanActivate' => false,
+        'Description' => 'The server could not temporarily deliver your message (ex: Message is delayed due to network troubles).',
+        'Details' => 'smtp;554 5.4.14 Hop count exceeded - possible mail loop',
+        'DumpAvailable' => true,
+        'Email' => 'john@example.com',
+        'From' => 'sender@example.com',
+        'ID' => 2387351591,
+        'Inactive' => false,
+        'MessageID' => '00000000-0000-0000-0000-000000000000',
+        'MessageStream' => 'broadcast',
+        'Metadata' => [
+            config('mails.headers.uuid') => $mail?->uuid,
+        ],
+        'Name' => 'Message delayed',
+        'RecordType' => 'Bounce',
+        'ServerID' => 1234,
+        'Subject' => 'Test subject',
+        'Tag' => 'Test',
+        'Type' => 'Transient',
+        'TypeCode' => 2,
+    ])->assertAccepted();
+
+    assertDatabaseHas((new MailEvent)->getTable(), [
+        'type' => EventType::TRANSIENT->value,
+    ]);
+});
+
 it('can receive incoming complaint webhook from postmark', function (): void {
     Mail::send([], [], function (Message $message): void {
         $message->to('mark@backstagephp.com')
