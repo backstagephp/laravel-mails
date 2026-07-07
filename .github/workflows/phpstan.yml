@@ -16,16 +16,16 @@ jobs:
         php: [8.2]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php }}
           coverage: none
 
       - name: Install composer dependencies
-        uses: ramsey/composer-install@v2
+        uses: ramsey/composer-install@1919f6c305aea6ab10e6181a8ddf72317ad77e0e # 2.3.1
 
       - name: Run PHPStan
         run: ./vendor/bin/phpstan --error-format=github
