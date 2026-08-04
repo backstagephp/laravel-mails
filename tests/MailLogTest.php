@@ -69,3 +69,17 @@ it('does not log tags when tags is not in the configured attributes', function (
     expect($mail)->not->toBeNull()
         ->and($mail->tags)->toBeNull();
 });
+
+it('does not mark an unrelated mail as sent when no uuid was attached', function (): void {
+    foreach (['first@vk10.nl', 'second@vk10.nl'] as $recipient) {
+        Mail::send([], [], function (Message $message) use ($recipient): void {
+            $message->to($recipient)
+                ->from('local@computer.nl')
+                ->subject('Test')
+                ->text('Text');
+        });
+    }
+
+    expect(MailModel::count())->toBe(2)
+        ->and(MailModel::sent()->count())->toBe(0);
+});
