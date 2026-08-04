@@ -31,8 +31,14 @@ abstract class MailDriver
 
     public function getMailFromPayload(array $payload): ?Mail
     {
+        // Without a uuid the payload cannot be traced back to a single mail, so
+        // matching on it would attribute the event to an unrelated recipient.
+        if (! $uuid = $this->getUuidFromPayload($payload)) {
+            return null;
+        }
+
         return $this->mailModel::query()
-            ->firstWhere('uuid', $this->getUuidFromPayload($payload));
+            ->firstWhere('uuid', $uuid);
     }
 
     public function getDataFromPayload(array $payload): array
