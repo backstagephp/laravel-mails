@@ -5,6 +5,7 @@ namespace Backstage\Mails\Laravel\Managers;
 use Backstage\Mails\Laravel\Drivers\MailgunDriver;
 use Backstage\Mails\Laravel\Drivers\PostmarkDriver;
 use Backstage\Mails\Laravel\Drivers\ResendDriver;
+use Backstage\Mails\Laravel\Drivers\SesDriver;
 use Illuminate\Support\Manager;
 
 class MailProviderManager extends Manager
@@ -27,6 +28,11 @@ class MailProviderManager extends Manager
     protected function createResendDriver(): ResendDriver
     {
         return new ResendDriver;
+    }
+
+    protected function createSesDriver(): SesDriver
+    {
+        return new SesDriver;
     }
 
     public function getDefaultDriver(): ?string

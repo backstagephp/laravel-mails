@@ -17,10 +17,10 @@ function messageSending(string $mailer): MessageSending
 
 it('finds the driver of every supported provider', function (string $provider): void {
     expect((new AttachUuid)->driverExistsForProvider($provider))->toBeTrue();
-})->with(['mailgun', 'postmark', 'resend']);
+})->with(['mailgun', 'postmark', 'resend', 'ses']);
 
 it('does not find a driver for unsupported providers', function (): void {
-    expect((new AttachUuid)->driverExistsForProvider('ses'))->toBeFalse();
+    expect((new AttachUuid)->driverExistsForProvider('sendgrid'))->toBeFalse();
 });
 
 it('attaches a uuid to mails sent through a supported provider', function (): void {
