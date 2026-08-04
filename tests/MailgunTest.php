@@ -6,6 +6,7 @@ use Backstage\Mails\Laravel\Models\MailEvent;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Testing\TestResponse;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\post;
@@ -540,3 +541,66 @@ it('ignores a webhook that carries no uuid instead of attributing it to another 
 
     expect(MailEvent::count())->toBe(0);
 });
+
+it('does not store a country code when mailgun cannot geolocate the recipient', function (): void {
+    postMailgunClickWebhook(geolocation: [
+        'city' => 'Unknown',
+        'country' => 'Unknown',
+        'region' => 'Unknown',
+        'timezone' => 'Unknown',
+    ])->assertAccepted();
+
+    expect(MailEvent::sole()->country_code)->toBeNull();
+});
+
+it('stores the country code mailgun sends as an uppercased iso code', function (): void {
+    postMailgunClickWebhook(geolocation: [
+        'city' => 'Puerto de la Omnivery',
+        'country' => 'es',
+        'region' => 'CT',
+    ])->assertAccepted();
+
+    expect(MailEvent::sole()->country_code)->toBe('ES');
+});
+
+function postMailgunClickWebhook(array $geolocation): TestResponse
+{
+    Mail::send([], [], function (Message $message): void {
+        $message->to('mark@vormkracht10.nl')
+            ->from('local@computer.nl')
+            ->subject('Test')
+            ->text('Text');
+    });
+
+    $mail = test()->lastSentMail();
+
+    return post(URL::signedRoute('mails.webhook', ['provider' => Provider::MAILGUN]), [
+        'signature' => [
+            'timestamp' => 1649408311,
+            'token' => 'eventtoken',
+            'signature' => 'secrethmacsignature',
+        ],
+        'event-data' => [
+            'event' => 'clicked',
+            'timestamp' => 1649408305,
+            'id' => 'OTk6MTA1MDI6Y2xpY2tlZDo1NjI1NDg3Njc=',
+            'recipient' => 'test@omnivery.com',
+            'recipient-domain' => 'omnivery.com',
+            'user-variables' => [
+                config('mails.headers.uuid') => $mail?->uuid,
+            ],
+            'ip' => '123.123.123.123',
+            'geolocation' => $geolocation,
+            'url' => 'https://example.com',
+            'message' => [
+                'headers' => [
+                    'message-id' => '6d261932-b677-11ec-aa58-03210c12f2eb',
+                    'subject' => 'Production test',
+                    'from' => '"Friendly Sender" <sender@omnivery.dev>',
+                    'to' => 'test@omnivery.com',
+                    'date' => 'Thu, 7 Apr 2022 13:34:17 +0000',
+                ],
+            ],
+        ],
+    ]);
+}

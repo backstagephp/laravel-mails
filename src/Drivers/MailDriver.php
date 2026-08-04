@@ -47,6 +47,7 @@ abstract class MailDriver
             ->mapWithKeys(fn ($value, $key): array => [
                 $key => is_array($v = data_get($payload, $value)) ? json_encode($v) : $v,
             ])
+            ->map(fn ($value, $key) => $key === 'country_code' ? $this->normalizeCountryCode($value) : $value)
             ->filter()
             ->merge([
                 'payload' => $payload,
@@ -54,6 +55,22 @@ abstract class MailDriver
                 'occurred_at' => $this->getTimestampFromPayload($payload),
             ])
             ->toArray();
+    }
+
+    /**
+     * Providers do not always send an ISO 3166-1 alpha-2 code: Mailgun sends
+     * "Unknown" when it cannot geolocate a recipient, which does not fit the
+     * two character country_code column. Anything but a code is dropped.
+     */
+    protected function normalizeCountryCode(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $code = strtoupper(trim($value));
+
+        return preg_match('/^[A-Z]{2}$/', $code) === 1 ? $code : null;
     }
 
     public function getEventFromPayload(array $payload): string
