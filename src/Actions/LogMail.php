@@ -15,7 +15,7 @@ class LogMail
 {
     use AsAction;
 
-    public function handle(MessageSending | MessageSent $event): mixed
+    public function handle(MessageSending|MessageSent $event): mixed
     {
         if (! config('mails.logging.enabled')) {
             return null;
@@ -55,14 +55,14 @@ class LogMail
         return new $model;
     }
 
-    public function getOnlyConfiguredAttributes(MessageSending | MessageSent $event): array
+    public function getOnlyConfiguredAttributes(MessageSending|MessageSent $event): array
     {
         return collect($this->getDefaultLogAttributes($event))
             ->only($this->getConfiguredAttributes())
             ->merge($this->getMandatoryAttributes($event))
             ->merge([
                 'mailer' => $event->data['mailer'],
-                'transport' => config('mail.mailers.' . $event->data['mailer'] . '.transport'),
+                'transport' => config('mail.mailers.'.$event->data['mailer'].'.transport'),
             ])
             ->toArray();
     }
@@ -72,7 +72,7 @@ class LogMail
         return (array) config('mails.logging.attributes');
     }
 
-    public function getDefaultLogAttributes(MessageSending | MessageSent $event): array
+    public function getDefaultLogAttributes(MessageSending|MessageSent $event): array
     {
         return [
             'subject' => $event->message->getSubject(),
@@ -87,7 +87,7 @@ class LogMail
         ];
     }
 
-    protected function getStreamId(MessageSending | MessageSent $event): ?string
+    protected function getStreamId(MessageSending|MessageSent $event): ?string
     {
         if ($event->data['mailer'] !== Provider::POSTMARK) {
             return null;
@@ -100,7 +100,7 @@ class LogMail
         return config('mail.mailers.postmark.message_stream_id', 'outbound');
     }
 
-    public function getMandatoryAttributes(MessageSending | MessageSent $event): array
+    public function getMandatoryAttributes(MessageSending|MessageSent $event): array
     {
         return [
             'uuid' => $this->getCustomUuid($event),
@@ -111,7 +111,7 @@ class LogMail
         ];
     }
 
-    protected function getCustomUuid(MessageSending | MessageSent $event): ?string
+    protected function getCustomUuid(MessageSending|MessageSent $event): ?string
     {
         if (! $event->message->getHeaders()->has(config('mails.headers.uuid'))) {
             return null;
