@@ -2,7 +2,6 @@
 
 use Backstage\Mails\Laravel\Enums\EventType;
 use Backstage\Mails\Laravel\Enums\Provider;
-use Backstage\Mails\Laravel\Models\Mail as MailModel;
 use Backstage\Mails\Laravel\Models\MailEvent;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
@@ -22,7 +21,7 @@ it('can receive incoming delivery webhook from mailgun', function (): void {
             ->html('<p>HTML</p>');
     });
 
-    $mail = MailModel::latest()->first();
+    $mail = $this->lastSentMail();
 
     post(URL::signedRoute('mails.webhook', ['provider' => Provider::MAILGUN]), [
         'event-data' => [
@@ -41,6 +40,7 @@ it('can receive incoming delivery webhook from mailgun', function (): void {
                 'transport' => 'smtp',
             ],
             'user-variables' => [
+                config('mails.headers.uuid') => $mail?->uuid,
                 'url' => [
                     'link' => 'https://example.com',
                     'title' => 'Omnivery',
@@ -88,7 +88,7 @@ it('can receive incoming accept webhook from mailgun', function (): void {
             ->html('<p>HTML</p>');
     });
 
-    $mail = MailModel::latest()->first();
+    $mail = $this->lastSentMail();
 
     post(URL::signedRoute('mails.webhook', ['provider' => Provider::MAILGUN]), [
         'signature' => [
@@ -146,12 +146,15 @@ it('can receive incoming hard bounce webhook from mailgun', function (): void {
             ->html('<p>HTML</p>');
     });
 
-    $mail = MailModel::latest()->first();
+    $mail = $this->lastSentMail();
 
     post(URL::signedRoute('mails.webhook', ['provider' => Provider::MAILGUN]), [
         'event-data' => [
             'event' => 'failed',
             'severity' => 'permanent',
+            'user-variables' => [
+                config('mails.headers.uuid') => $mail?->uuid,
+            ],
             'envelope' => [
                 'sender' => 'bounce-d9bee8ac-b0e7-11ec-8086-57d93b186f66@notify.omnivery.com',
                 'sending-ip' => '185.136.201.130',
@@ -205,12 +208,15 @@ it('can receive incoming soft bounce webhook from mailgun', function (): void {
             ->html('<p>HTML</p>');
     });
 
-    $mail = MailModel::latest()->first();
+    $mail = $this->lastSentMail();
 
     post(URL::signedRoute('mails.webhook', ['provider' => Provider::MAILGUN]), [
         'event-data' => [
             'event' => 'failed',
             'severity' => 'temporary',
+            'user-variables' => [
+                config('mails.headers.uuid') => $mail?->uuid,
+            ],
             'envelope' => [
                 'sender' => 'bounce-d9bee8ac-b0e7-11ec-8086-57d93b186f66@notify.omnivery.com',
                 'sending-ip' => '185.136.201.130',
@@ -264,7 +270,7 @@ it('can receive incoming complaint webhook from mailgun', function (): void {
             ->html('<p>HTML</p>');
     });
 
-    $mail = MailModel::latest()->first();
+    $mail = $this->lastSentMail();
 
     post(URL::signedRoute('mails.webhook', ['provider' => Provider::MAILGUN]), [
         'signature' => [
@@ -321,7 +327,7 @@ it('can receive incoming open webhook from mailgun', function (): void {
             ->html('<p>HTML</p>');
     });
 
-    $mail = MailModel::latest()->first();
+    $mail = $this->lastSentMail();
 
     post(URL::signedRoute('mails.webhook', ['provider' => Provider::MAILGUN]), [
         'signature' => [
@@ -332,6 +338,9 @@ it('can receive incoming open webhook from mailgun', function (): void {
         'event-data' => [
             'recipient-domain' => 'omnivery.com',
             'timestamp' => 1649408305,
+            'user-variables' => [
+                config('mails.headers.uuid') => $mail?->uuid,
+            ],
             'envelope' => [
                 'targets' => 'test@omnivery.com',
             ],
@@ -382,7 +391,7 @@ it('can receive incoming click webhook from mailgun', function (): void {
             ->html('<p>HTML</p>');
     });
 
-    $mail = MailModel::latest()->first();
+    $mail = $this->lastSentMail();
 
     post(URL::signedRoute('mails.webhook', ['provider' => Provider::MAILGUN]), [
         'signature' => [
@@ -447,7 +456,7 @@ it('can receive incoming unsubscribe webhook from mailgun', function (): void {
             ->html('<p>HTML</p>');
     });
 
-    $mail = MailModel::latest()->first();
+    $mail = $this->lastSentMail();
 
     post(URL::signedRoute('mails.webhook', ['provider' => Provider::MAILGUN]), [
         'signature' => [
@@ -490,4 +499,44 @@ it('can receive incoming unsubscribe webhook from mailgun', function (): void {
     assertDatabaseHas((new MailEvent)->getTable(), [
         'type' => EventType::UNSUBSCRIBED->value,
     ]);
+});
+
+it('ignores a webhook that carries no uuid instead of attributing it to another mail', function (): void {
+    Mail::send([], [], function (Message $message): void {
+        $message->to('mark@vormkracht10.nl')
+            ->from('local@computer.nl')
+            ->subject('Test')
+            ->text('Text');
+    });
+
+    // Deliberately no uuid on the logged mail either, so a lookup on a missing
+    // uuid would match it.
+    post(URL::signedRoute('mails.webhook', ['provider' => Provider::MAILGUN]), [
+        'event-data' => [
+            'event' => 'opened',
+            'recipient' => 'someone-else@omnivery.com',
+            'recipient-domain' => 'omnivery.com',
+            'timestamp' => 1649408305,
+            'user-variables' => [],
+            'envelope' => [
+                'targets' => 'someone-else@omnivery.com',
+            ],
+            'message' => [
+                'headers' => [
+                    'message-id' => '6d261932-b677-11ec-aa58-03210c12f2eb',
+                    'subject' => 'Production test',
+                    'from' => '"Friendly Sender" <sender@omnivery.dev>',
+                    'to' => 'someone-else@omnivery.com',
+                    'date' => 'Thu, 7 Apr 2022 13:34:17 +0000',
+                ],
+            ],
+        ],
+        'signature' => [
+            'timestamp' => 1649408311,
+            'token' => 'eventtoken',
+            'signature' => 'secrethmacsignature',
+        ],
+    ])->assertAccepted();
+
+    expect(MailEvent::count())->toBe(0);
 });

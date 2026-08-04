@@ -31,9 +31,15 @@ class LogMail
         }
 
         if ($event instanceof MessageSent) {
-            $mail = $mail->firstWhere('uuid', $this->getCustomUuid($event));
+            // Without a uuid every logged mail looks alike, so correlating would
+            // update an unrelated row instead of the mail that was just sent.
+            if (! $uuid = $this->getCustomUuid($event)) {
+                return null;
+            }
 
-            $mail->update($this->getOnlyConfiguredAttributes($event));
+            $mail = $mail->firstWhere('uuid', $uuid);
+
+            $mail?->update($this->getOnlyConfiguredAttributes($event));
         }
 
         return null;
