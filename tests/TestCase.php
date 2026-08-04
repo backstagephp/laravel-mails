@@ -3,9 +3,11 @@
 namespace Backstage\Mails\Laravel\Tests;
 
 use Backstage\Mails\Laravel\MailsServiceProvider;
+use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Str;
 use NotificationChannels\Discord\DiscordServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -22,6 +24,19 @@ class TestCase extends Orchestra
         );
 
         $this->loadMigrations();
+    }
+
+    /**
+     * The test mailer has no provider driver, so AttachUuid never runs. Stand in
+     * for it, because webhooks are only matched to a mail through its uuid.
+     */
+    protected function lastSentMail(): Mail
+    {
+        $mail = Mail::latest()->first();
+
+        $mail->update(['uuid' => Str::uuid()->toString()]);
+
+        return $mail;
     }
 
     protected function getPackageProviders($app): array
