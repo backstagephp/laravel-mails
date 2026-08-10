@@ -10,7 +10,20 @@ class WebhookController
 {
     public function __invoke(Request $request, string $provider): Response
     {
-        ProcessWebhookJob::dispatch($provider, $request->all());
+        $payload = $request->all();
+
+        // Amazon SNS posts its JSON with Content-Type text/plain, which the
+        // request parser ignores, leaving only the query string (the webhook
+        // route's signature). Decode the raw body ourselves in that case.
+        if (! $request->isJson() && $request->request->count() === 0) {
+            $decoded = json_decode($request->getContent(), true);
+
+            if (is_array($decoded)) {
+                $payload = $decoded;
+            }
+        }
+
+        ProcessWebhookJob::dispatch($provider, $payload);
 
         return response('Event processed.', status: 202);
     }

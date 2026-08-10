@@ -3,6 +3,8 @@
 namespace Backstage\Mails\Laravel\Drivers;
 
 use Aws\Exception\AwsException;
+use Aws\Ses\SesClient;
+use Aws\SesV2\SesV2Client;
 use Aws\Sns\Message;
 use Aws\Sns\MessageValidator;
 use Aws\Sns\SnsClient;
@@ -12,61 +14,51 @@ use Backstage\Mails\Laravel\Enums\Provider;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
-use Illuminate\Mail\Transport\SesTransport;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 
 class SesDriver extends MailDriver implements MailDriverContract
 {
     public function registerWebhooks($components): void
     {
-        $mailer = Mail::driver('ses');
-
-        if ($mailer === null) {
+        if (! class_exists(SesClient::class)) {
             $components->warn('Failed to create SES webhook');
-            $components->error('There is no Amazon SES Driver configured in your Laravel application.');
+            $components->error('The AWS SDK is missing. Run: composer require aws/aws-sdk-php aws/aws-php-sns-message-validator');
 
             return;
         }
 
         $trackingConfig = (array) config('mails.logging.tracking');
 
-        // Configuration Set Event Destination event types (for open/click/delivery/bounce/complaint tracking)
+        // Configuration Set Event Destination event types. Rendering failures
+        // are not subscribed to: they only occur for SES template sending,
+        // which Laravel's mailer never uses (it renders mails itself).
         $events = [];
 
-        // SNS Identity Notification types (only Bounce, Complaint, Delivery are valid)
-        $eventTypes = [];
-
-        if ((bool) $trackingConfig['opens']) {
+        if (! empty($trackingConfig['opens'])) {
             $events[] = 'open';
         }
 
-        if ((bool) $trackingConfig['clicks']) {
+        if (! empty($trackingConfig['clicks'])) {
             $events[] = 'click';
         }
 
-        if ((bool) $trackingConfig['deliveries']) {
+        if (! empty($trackingConfig['deliveries'])) {
             $events[] = 'delivery';
-            $eventTypes[] = 'Delivery';
         }
 
-        if ((bool) $trackingConfig['bounces']) {
+        if (! empty($trackingConfig['bounces'])) {
             $events[] = 'reject';
             $events[] = 'bounce';
-            $events[] = 'renderingFailure';
-            $eventTypes[] = 'Bounce';
         }
 
-        if ((bool) $trackingConfig['complaints']) {
+        if (! empty($trackingConfig['complaints'])) {
             $events[] = 'complaint';
-            $eventTypes[] = 'Complaint';
         }
 
-        /** @var SesTransport $sesTransport */
-        $sesTransport = $mailer->getSymfonyTransport();
-        $sesClient = $sesTransport->ses();
+        $config = (array) config('services.ses', []);
+        $sesClient = $this->createSesClient($config);
         $configurationSet = config('services.ses.configuration_set_name', 'laravel-mails-ses-webhook');
 
         try {
@@ -84,8 +76,8 @@ class SesDriver extends MailDriver implements MailDriverContract
             }
 
             // 2. Create a SNS Topic (idempotent - returns existing topic ARN if it already exists)
-            $config = config('services.sns', config('services.ses', []));
-            $snsClient = $this->createSnsClient($config);
+            $snsConfig = (array) config('services.sns', $config);
+            $snsClient = $this->createSnsClient($snsConfig);
             $result = $snsClient->createTopic([
                 'Name' => $configurationSet,
             ]);
@@ -94,7 +86,7 @@ class SesDriver extends MailDriver implements MailDriverContract
             // 3. Give access to SES to publish notifications to the topic
             try {
                 $snsClient->addPermission([
-                    'AWSAccountId' => [$config['account_id'] ?? ''],
+                    'AWSAccountId' => [$snsConfig['account_id'] ?? ''],
                     'ActionName' => ['Publish'],
                     'Label' => 'ses-notification-policy',
                     'TopicArn' => $topicArn,
@@ -106,26 +98,7 @@ class SesDriver extends MailDriver implements MailDriverContract
                 }
             }
 
-            // 4. Set identity notification topics for Bounce/Complaint/Delivery
-            $eventTypes = array_unique($eventTypes);
-
-            foreach ($eventTypes as $eventType) {
-                $identity = config('services.ses.identity', config('mail.from.address'));
-
-                $sesClient->setIdentityNotificationTopic([
-                    'Identity' => $identity,
-                    'NotificationType' => $eventType,
-                    'SnsTopic' => $topicArn,
-                ]);
-
-                $sesClient->setIdentityHeadersInNotificationsEnabled([
-                    'Identity' => $identity,
-                    'NotificationType' => $eventType,
-                    'Enabled' => true,
-                ]);
-            }
-
-            // 5. Register SNS as the event destination (remove existing first to avoid duplicates)
+            // 4. Register SNS as the event destination (remove existing first to avoid duplicates)
             $eventDestinationName = $configurationSet . '-sns';
 
             try {
@@ -151,7 +124,7 @@ class SesDriver extends MailDriver implements MailDriverContract
                 ],
             ]);
 
-            // 6. Subscribe to the topic
+            // 5. Subscribe to the topic
             $webhookUrl = URL::signedRoute('mails.webhook', ['provider' => Provider::SES]);
             $scheme = config('services.ses.scheme', 'https');
             $snsClient->subscribe([
@@ -177,13 +150,14 @@ class SesDriver extends MailDriver implements MailDriverContract
             return true;
         }
 
-        $message = Message::fromRawPostData();
-
         $validator = new MessageValidator(function ($url) {
             return Http::timeout(10)->get($url)->body();
         });
 
         try {
+            // Built from the stored payload rather than php://input, because
+            // webhooks may be verified on a queue worker with no live request.
+            $message = new Message($payload);
             $validator->validate($message);
         } catch (\Throwable $e) {
             report($e);
@@ -200,7 +174,19 @@ class SesDriver extends MailDriver implements MailDriverContract
 
     public function attachUuidToMail(MessageSending $event, string $uuid): MessageSending
     {
-        $event->message->getHeaders()->addTextHeader($this->uuidHeaderName, $uuid);
+        $headers = $event->message->getHeaders();
+
+        $headers->addTextHeader($this->uuidHeaderName, $uuid);
+
+        // SES only publishes events for mails sent under the configuration set
+        // the webhook is registered on, so attach it per message unless the
+        // mailer is already configured with one.
+        if (! config('mail.mailers.ses.options.ConfigurationSetName')) {
+            $headers->addTextHeader(
+                'X-SES-CONFIGURATION-SET',
+                config('services.ses.configuration_set_name', 'laravel-mails-ses-webhook'),
+            );
+        }
 
         return $event;
     }
@@ -234,9 +220,11 @@ class SesDriver extends MailDriver implements MailDriverContract
 
     protected function getTimestampFromPayload(array $payload): string
     {
+        $sesMessage = $this->parseSnsMessage($payload);
+
         foreach (['click', 'open', 'bounce', 'complaint', 'delivery', 'mail'] as $event) {
-            if (isset($payload[$event]['timestamp'])) {
-                return $payload[$event]['timestamp'];
+            if (isset($sesMessage[$event]['timestamp'])) {
+                return $sesMessage[$event]['timestamp'];
             }
         }
 
@@ -268,6 +256,26 @@ class SesDriver extends MailDriver implements MailDriverContract
         ]);
     }
 
+    public function getEventFromPayload(array $payload): string
+    {
+        $sesMessage = $this->parseSnsMessage($payload);
+
+        // A Reject means SES refused to send the mail (it detected a virus),
+        // so it will never arrive: a hard bounce.
+        if (($sesMessage['eventType'] ?? null) === 'Reject') {
+            return EventType::HARD_BOUNCED->value;
+        }
+
+        // SES could not tell whether an Undetermined bounce is permanent, and
+        // the address may still be deliverable, so treat it as soft.
+        if (($sesMessage['eventType'] ?? null) === 'Bounce'
+            && ($sesMessage['bounce']['bounceType'] ?? null) === 'Undetermined') {
+            return EventType::SOFT_BOUNCED->value;
+        }
+
+        return parent::getEventFromPayload($sesMessage);
+    }
+
     public function eventMapping(): array
     {
         return [
@@ -277,7 +285,7 @@ class SesDriver extends MailDriver implements MailDriverContract
             EventType::DELIVERED->value => ['eventType' => 'Delivery'],
             EventType::OPENED->value => ['eventType' => 'Open'],
             EventType::HARD_BOUNCED->value => ['eventType' => 'Bounce', 'bounce.bounceType' => 'Permanent'],
-            EventType::SOFT_BOUNCED->value => ['eventType' => 'Bounce', 'bounce.bounceType' => 'Temporary'],
+            EventType::SOFT_BOUNCED->value => ['eventType' => 'Bounce', 'bounce.bounceType' => 'Transient'],
         ];
     }
 
@@ -296,20 +304,25 @@ class SesDriver extends MailDriver implements MailDriverContract
         ];
     }
 
-    protected function createSnsClient(array $config): SnsClient
+    protected function createSesClient(array $config): SesClient
     {
-        $config = array_merge(
-            [
-                'version' => 'latest',
-            ],
-            $config
-        );
-
-        return new SnsClient($this->addSnsCredentials($config));
+        return new SesClient($this->addCredentials($config));
     }
 
-    protected function addSnsCredentials(array $config): array
+    protected function createSesV2Client(array $config): SesV2Client
     {
+        return new SesV2Client($this->addCredentials($config));
+    }
+
+    protected function createSnsClient(array $config): SnsClient
+    {
+        return new SnsClient($this->addCredentials($config));
+    }
+
+    protected function addCredentials(array $config): array
+    {
+        $config = array_merge(['version' => 'latest'], $config);
+
         if (! empty($config['key']) && ! empty($config['secret'])) {
             $config['credentials'] = Arr::only($config, ['key', 'secret']);
 
@@ -323,14 +336,10 @@ class SesDriver extends MailDriver implements MailDriverContract
 
     public function unsuppressEmailAddress(string $address, ?int $stream_id = null): Response
     {
-        $mailer = Mail::driver('ses');
-
-        /** @var SesTransport $sesTransport */
-        $sesTransport = $mailer->getSymfonyTransport();
-        $sesClient = $sesTransport->ses();
-
         try {
-            $sesClient->deleteSuppressedDestination([
+            // The account-level suppression list only exists in the SESv2 API,
+            // so this cannot go through the mailer's (v1) client.
+            $this->createSesV2Client((array) config('services.ses', []))->deleteSuppressedDestination([
                 'EmailAddress' => $address,
             ]);
 

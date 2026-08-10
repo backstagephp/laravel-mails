@@ -37,3 +37,9 @@ it('registers webhooks for resend', function (): void {
 
     artisan('mail:webhooks', ['provider' => 'resend'])->assertSuccessful();
 });
+
+it('fails gracefully registering webhooks for ses without the aws sdk', function (): void {
+    // The AWS SDK is a suggested dependency and not installed here, so the
+    // command should explain that instead of crashing on a missing class.
+    artisan('mail:webhooks', ['provider' => 'ses'])->assertSuccessful();
+});
