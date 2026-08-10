@@ -244,7 +244,9 @@ When using Amazon SES, you also require the following dependencies
 composer require aws/aws-sdk-php aws/aws-php-sns-message-validator
 ```
 
-Your AWS SES user should also have the authorization to create SNS topics.
+Your AWS SES user should also have the authorization to create SNS topics and to manage the SES account-level suppression list.
+
+SES only publishes events for mails sent under the configuration set the webhook is registered on. The package attaches it to every outgoing mail automatically, unless you configured your own via `mail.mailers.ses.options.ConfigurationSetName`.
 
 ## Usage
 

@@ -1,11 +1,14 @@
 <?php
 
+use Backstage\Mails\Laravel\Actions\AttachUuid;
 use Backstage\Mails\Laravel\Enums\EventType;
 use Backstage\Mails\Laravel\Enums\Provider;
 use Backstage\Mails\Laravel\Models\MailEvent;
+use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Symfony\Component\Mime\Email;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\post;
@@ -142,7 +145,7 @@ it('can receive incoming soft bounce webhook from amazon ses', function (): void
             ],
         ],
         'bounce' => [
-            'bounceType' => 'Temporary',
+            'bounceType' => 'Transient',
             'bounceSubType' => 'General',
             'bouncedRecipients' => [
                 [
@@ -351,4 +354,153 @@ it('can receive incoming accepted webhook from amazon ses', function (): void {
     assertDatabaseHas((new MailEvent)->getTable(), [
         'type' => EventType::ACCEPTED->value,
     ]);
+});
+
+it('can receive incoming undetermined bounce webhook from amazon ses', function (): void {
+    Mail::send([], [], function (Message $message): void {
+        $message->to('mark@vormkracht10.nl')
+            ->from('local@computer.nl')
+            ->subject('Test')
+            ->text('Text');
+    });
+
+    $mail = $this->lastSentMail();
+
+    $sesEvent = [
+        'eventType' => 'Bounce',
+        'mail' => [
+            'timestamp' => '2016-10-19T23:20:52.240Z',
+            'headers' => [
+                ['name' => config('mails.headers.uuid'), 'value' => $mail->uuid],
+            ],
+        ],
+        'bounce' => [
+            'bounceType' => 'Undetermined',
+            'bounceSubType' => 'Undetermined',
+            'bouncedRecipients' => [
+                ['emailAddress' => 'recipient@example.com'],
+            ],
+            'timestamp' => '2016-10-19T23:21:04.133Z',
+            'feedbackId' => 'EXAMPLE-feedback-id',
+        ],
+    ];
+
+    post(URL::signedRoute('mails.webhook', ['provider' => Provider::SES]), [
+        'Type' => 'Notification',
+        'Message' => json_encode($sesEvent),
+        'Timestamp' => '2016-10-19T23:21:04.133Z',
+    ])->assertAccepted();
+
+    assertDatabaseHas((new MailEvent)->getTable(), [
+        'type' => EventType::SOFT_BOUNCED->value,
+    ]);
+});
+
+it('can receive incoming reject webhook from amazon ses', function (): void {
+    Mail::send([], [], function (Message $message): void {
+        $message->to('mark@vormkracht10.nl')
+            ->from('local@computer.nl')
+            ->subject('Test')
+            ->text('Text');
+    });
+
+    $mail = $this->lastSentMail();
+
+    $sesEvent = [
+        'eventType' => 'Reject',
+        'mail' => [
+            'timestamp' => '2016-10-19T23:20:52.240Z',
+            'headers' => [
+                ['name' => config('mails.headers.uuid'), 'value' => $mail->uuid],
+            ],
+        ],
+        'reject' => [
+            'reason' => 'Bad content',
+        ],
+    ];
+
+    post(URL::signedRoute('mails.webhook', ['provider' => Provider::SES]), [
+        'Type' => 'Notification',
+        'Message' => json_encode($sesEvent),
+        'Timestamp' => '2016-10-19T23:20:52.240Z',
+    ])->assertAccepted();
+
+    assertDatabaseHas((new MailEvent)->getTable(), [
+        'type' => EventType::HARD_BOUNCED->value,
+    ]);
+});
+
+it('can receive a webhook posted as text/plain like sns delivers it', function (): void {
+    Mail::send([], [], function (Message $message): void {
+        $message->to('mark@vormkracht10.nl')
+            ->from('local@computer.nl')
+            ->subject('Test')
+            ->text('Text');
+    });
+
+    $mail = $this->lastSentMail();
+
+    $sesEvent = [
+        'eventType' => 'Delivery',
+        'mail' => [
+            'timestamp' => '2016-10-19T23:20:52.240Z',
+            'headers' => [
+                ['name' => config('mails.headers.uuid'), 'value' => $mail->uuid],
+            ],
+        ],
+        'delivery' => [
+            'timestamp' => '2016-10-19T23:21:04.133Z',
+        ],
+    ];
+
+    $this->call(
+        'POST',
+        URL::signedRoute('mails.webhook', ['provider' => Provider::SES]),
+        [],
+        [],
+        [],
+        ['CONTENT_TYPE' => 'text/plain; charset=UTF-8'],
+        json_encode([
+            'Type' => 'Notification',
+            'Message' => json_encode($sesEvent),
+            'Timestamp' => '2016-10-19T23:21:04.133Z',
+        ]),
+    )->assertAccepted();
+
+    assertDatabaseHas((new MailEvent)->getTable(), [
+        'type' => EventType::DELIVERED->value,
+    ]);
+});
+
+it('attaches the configuration set to outgoing ses mail', function (): void {
+    config()->set('mail.mailers.ses.transport', 'ses');
+
+    $email = (new Email)
+        ->from('local@computer.nl')
+        ->to('mark@vormkracht10.nl')
+        ->subject('Test')
+        ->text('Text');
+
+    $event = (new AttachUuid)->handle(new MessageSending($email, ['mailer' => 'ses']));
+
+    expect($event->message->getHeaders()->get(config('mails.headers.uuid'))?->getBodyAsString())
+        ->toBeString()->not->toBeEmpty();
+
+    expect($event->message->getHeaders()->get('X-SES-CONFIGURATION-SET')?->getBodyAsString())
+        ->toBe('laravel-mails-ses-webhook');
+});
+
+it('does not attach the configuration set when the ses mailer already has one', function (): void {
+    config()->set('mail.mailers.ses.transport', 'ses');
+    config()->set('mail.mailers.ses.options.ConfigurationSetName', 'my-own-set');
+
+    $email = (new Email)
+        ->from('local@computer.nl')
+        ->to('mark@vormkracht10.nl')
+        ->subject('Test')
+        ->text('Text');
+
+    $event = (new AttachUuid)->handle(new MessageSending($email, ['mailer' => 'ses']));
+
+    expect($event->message->getHeaders()->has('X-SES-CONFIGURATION-SET'))->toBeFalse();
 });
