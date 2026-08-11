@@ -3,6 +3,7 @@
 namespace Backstage\Mails\Laravel\Traits;
 
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Notification as Notifications;
 
 trait SendsNotifications
@@ -12,7 +13,7 @@ trait SendsNotifications
         foreach ($channels as $channel) {
             $key = implode('.', ['mails', 'notifications', $channel, 'to']);
 
-            $accounts = array_wrap(
+            $accounts = Arr::wrap(
                 config($key, []),
             );
 

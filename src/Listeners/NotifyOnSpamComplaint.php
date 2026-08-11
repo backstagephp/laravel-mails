@@ -12,7 +12,7 @@ class NotifyOnSpamComplaint
 
     public function handle(MailComplained $mailComplained): void
     {
-        if (! $channels = config('mails.events.complaint.notify')) {
+        if (! $channels = config('mails.events.complained.notify')) {
             return;
         }
 

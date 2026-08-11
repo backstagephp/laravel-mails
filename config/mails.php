@@ -131,7 +131,7 @@ return [
         ],
 
         'complained' => [
-            //
+            'notify' => [],
         ],
 
         'unsent' => [

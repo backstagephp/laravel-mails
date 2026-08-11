@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Arr;
 use NotificationChannels\Discord\DiscordMessage;
 use NotificationChannels\Telegram\TelegramMessage;
 
@@ -29,7 +30,7 @@ class HighBounceRateNotification extends Notification implements ShouldQueue
 
     public function getMessage(): string
     {
-        $emoji = array_random([
+        $emoji = Arr::random([
             '🔥', '🧯', '‼️', '⁉️', '🔴', '📣', '😅', '🥵',
         ]);
 
