@@ -504,3 +504,37 @@ it('does not attach the configuration set when the ses mailer already has one', 
 
     expect($event->message->getHeaders()->has('X-SES-CONFIGURATION-SET'))->toBeFalse();
 });
+
+it('respects a configuration set on a custom named ses mailer', function (): void {
+    config()->set('mail.mailers.amazon.transport', 'ses');
+    config()->set('mail.mailers.amazon.options.ConfigurationSetName', 'my-own-set');
+
+    $email = (new Email)
+        ->from('local@computer.nl')
+        ->to('mark@vormkracht10.nl')
+        ->subject('Test')
+        ->text('Text');
+
+    $event = (new AttachUuid)->handle(new MessageSending($email, ['mailer' => 'amazon']));
+
+    expect($event->message->getHeaders()->has('X-SES-CONFIGURATION-SET'))->toBeFalse();
+    expect($event->message->getHeaders()->has(config('mails.headers.uuid')))->toBeTrue();
+});
+
+it('attaches only the uuid for the ses-v2 transport', function (): void {
+    config()->set('mail.mailers.ses.transport', 'ses-v2');
+
+    $email = (new Email)
+        ->from('local@computer.nl')
+        ->to('mark@vormkracht10.nl')
+        ->subject('Test')
+        ->text('Text');
+
+    $event = (new AttachUuid)->handle(new MessageSending($email, ['mailer' => 'ses']));
+
+    // The X-SES-CONFIGURATION-SET header is only documented for the v1 API;
+    // ses-v2 mailers carry the configuration set in their options instead.
+    expect($event->message->getHeaders()->has('X-SES-CONFIGURATION-SET'))->toBeFalse();
+    expect($event->message->getHeaders()->get(config('mails.headers.uuid'))?->getBodyAsString())
+        ->toBeString()->not->toBeEmpty();
+});

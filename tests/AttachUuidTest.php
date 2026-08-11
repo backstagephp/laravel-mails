@@ -17,7 +17,7 @@ function messageSending(string $mailer): MessageSending
 
 it('finds the driver of every supported provider', function (string $provider): void {
     expect((new AttachUuid)->driverExistsForProvider($provider))->toBeTrue();
-})->with(['mailgun', 'postmark', 'resend', 'ses']);
+})->with(['mailgun', 'postmark', 'resend', 'ses', 'ses-v2']);
 
 it('does not find a driver for unsupported providers', function (): void {
     expect((new AttachUuid)->driverExistsForProvider('sendgrid'))->toBeFalse();
