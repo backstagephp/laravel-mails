@@ -26,7 +26,7 @@ As we got tired of the situation that a customer needs to call us, we want to kn
 Laravel Mails can collect everything you might want to track about the mails that has been sent by your Laravel app. Common use cases are provided in this package:
 
 -   Log all sent emails, attachments and events with only specific attributes
--   Works currently for popular email service providers Postmark and Mailgun
+-   Works currently for popular email service providers Postmark, Mailgun, Resend and Amazon SES
 -   Collect feedback about the delivery status from email providers using webhooks
 -   Get quickly and automatically notified when email hard/soft bounces or the bouncerate goes too high
 -   Prune all logged emails periodically to keep the database nice and slim
@@ -35,7 +35,7 @@ Laravel Mails can collect everything you might want to track about the mails tha
 
 ## Upcoming features
 
--   We can write drivers for popular email service providers like Resend, SendGrid, Amazon SES and Mailtrap.
+-   We can write drivers for more email service providers like SendGrid and Mailtrap.
 -   Relate emails being send in Laravel directly to Eloquent models, for example the order confirmation email attached to an Order model.
 
 ## Looking for a UI? We've got your back: [Filament Mails](https://github.com/backstagephp/filament-mails)
@@ -61,7 +61,7 @@ php artisan vendor:publish --tag="mails-migrations"
 php artisan migrate
 ```
 
-Add the API key of your email service provider to the `config/services.php` file in your Laravel project, currently we only support Postmark and Mailgun:
+Add the API key of your email service provider to the `config/services.php` file in your Laravel project. We currently support Postmark, Mailgun, Resend and Amazon SES:
 
 ```php
 'postmark' => [
@@ -92,7 +92,7 @@ Add the API key of your email service provider to the `config/services.php` file
 When done, run this command with the slug of your service provider:
 
 ```bash
-php artisan mail:webhooks [service] // where [service] is your provider, e.g. postmark or mailgun
+php artisan mail:webhooks [service] // where [service] is your provider, e.g. postmark, mailgun, resend or ses
 ```
 
 And for changing the configuration you can publish the config file with:
@@ -236,17 +236,104 @@ This is the contents of the published config file:
 ]
 ```
 
-### [Optional] Amazon SES
+### Setting up Amazon SES
 
-When using Amazon SES, you also require the following dependencies
+Amazon SES needs a little more setup than the other providers, because SES does not post events to your app directly: it publishes them to an SNS topic, which then delivers them to your webhook.
+
+#### 1. Install the AWS dependencies
+
+The AWS SDK is optional, so install it yourself when you use SES:
 
 ```bash
 composer require aws/aws-sdk-php aws/aws-php-sns-message-validator
 ```
 
-Your AWS SES user should also have the authorization to create SNS topics and to manage the SES account-level suppression list.
+#### 2. Configure the SES mailer
 
-SES only publishes events for mails sent under the configuration set the webhook is registered on. The package attaches it to every outgoing mail automatically, unless you configured your own via `mail.mailers.ses.options.ConfigurationSetName`.
+Use the SES mailer that ships with Laravel and fill in your AWS credentials:
+
+```dotenv
+MAIL_MAILER=ses
+
+AWS_ACCESS_KEY_ID=your-key
+AWS_SECRET_ACCESS_KEY=your-secret
+AWS_DEFAULT_REGION=eu-west-1
+AWS_ACCOUNT_ID=123456789012
+```
+
+Make sure the address you send from is a verified identity in the SES console, and that your account is out of the SES sandbox before sending to arbitrary recipients.
+
+#### 3. Add the SES service configuration
+
+Add the `ses` block shown in the [installation section](#installation) to `config/services.php`. Besides the credentials Laravel already uses, this package reads:
+
+| Key | Description |
+| --- | --- |
+| `configuration_set_name` | Name of the SES configuration set and SNS topic the package creates. Defaults to `laravel-mails-ses-webhook`. |
+| `account_id` | Your AWS account id, used to grant SES permission to publish to the SNS topic. |
+| `scheme` | The protocol SNS uses to deliver to your webhook: `https` (recommended) or `http`. |
+
+#### 4. Grant the right IAM permissions
+
+The user whose credentials you configured needs to send mail, manage the configuration set, and create the SNS topic:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ses:SendRawEmail",
+                "ses:CreateConfigurationSet",
+                "ses:CreateConfigurationSetEventDestination",
+                "ses:DeleteConfigurationSetEventDestination",
+                "ses:DeleteSuppressedDestination",
+                "sns:CreateTopic",
+                "sns:AddPermission",
+                "sns:Subscribe"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+`ses:DeleteSuppressedDestination` is only needed if you want to remove addresses from the SES account-level suppression list from within your app.
+
+#### 5. Register the webhooks
+
+```bash
+php artisan mail:webhooks ses
+```
+
+This creates the configuration set, creates the SNS topic, allows SES to publish to it, points the configuration set's event destination at the topic, and subscribes your webhook URL to it. The command is idempotent, so you can safely run it again.
+
+Which events get registered depends on the `mails.logging.tracking` config: only the ones you enabled are subscribed to.
+
+#### 6. Confirm the SNS subscription
+
+SNS immediately posts a `SubscriptionConfirmation` message to your webhook, which the package confirms for you. For this to work:
+
+-   your webhook URL must be publicly reachable (SNS cannot reach `localhost`), and
+-   your queue worker must be running if `QUEUE_CONNECTION` is not `sync`, since incoming webhooks are processed on the queue.
+
+You can check the subscription status in the SNS console under the topic named after your configuration set. If it is still `PendingConfirmation`, the confirmation request never reached your app.
+
+#### How events are matched
+
+SES only publishes events for mails that were sent under the configuration set your webhook is registered on. This package therefore adds an `X-SES-CONFIGURATION-SET` header to every outgoing mail. If you already configured a set yourself via `mail.mailers.ses.options.ConfigurationSetName`, that one is left untouched:
+
+```php
+'ses' => [
+    'transport' => 'ses',
+    'options' => [
+        'ConfigurationSetName' => 'my-own-configuration-set',
+    ],
+],
+```
+
+In that case, register the webhooks against the same name by setting `services.ses.configuration_set_name` to it.
 
 ## Usage
 
