@@ -38,8 +38,8 @@ it('registers webhooks for resend', function (): void {
     artisan('mail:webhooks', ['provider' => 'resend'])->assertSuccessful();
 });
 
-it('fails gracefully registering webhooks for ses without the aws sdk', function (): void {
-    // The AWS SDK is a suggested dependency and not installed here, so the
-    // command should explain that instead of crashing on a missing class.
+it('fails gracefully registering webhooks for ses when unconfigured', function (): void {
+    // Whether the AWS SDK is missing or the ses services config is empty, the
+    // command should explain the problem instead of crashing.
     artisan('mail:webhooks', ['provider' => 'ses'])->assertSuccessful();
 });

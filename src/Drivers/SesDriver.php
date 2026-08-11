@@ -58,10 +58,11 @@ class SesDriver extends MailDriver implements MailDriverContract
         }
 
         $config = (array) config('services.ses', []);
-        $sesClient = $this->createSesClient($config);
         $configurationSet = config('services.ses.configuration_set_name', 'laravel-mails-ses-webhook');
 
         try {
+            $sesClient = $this->createSesClient($config);
+
             // 1. Get or create the Configuration Set
             try {
                 $sesClient->createConfigurationSet([
@@ -178,10 +179,7 @@ class SesDriver extends MailDriver implements MailDriverContract
 
         $headers->addTextHeader($this->uuidHeaderName, $uuid);
 
-        // SES only publishes events for mails sent under the configuration set
-        // the webhook is registered on, so attach it per message unless the
-        // mailer is already configured with one.
-        if (! config('mail.mailers.ses.options.ConfigurationSetName')) {
+        if ($this->shouldAttachConfigurationSet($event)) {
             $headers->addTextHeader(
                 'X-SES-CONFIGURATION-SET',
                 config('services.ses.configuration_set_name', 'laravel-mails-ses-webhook'),
@@ -189,6 +187,18 @@ class SesDriver extends MailDriver implements MailDriverContract
         }
 
         return $event;
+    }
+
+    /**
+     * SES only publishes events for mails sent under the configuration set the
+     * webhook is registered on, so attach it per message unless the mailer is
+     * already configured with one.
+     */
+    protected function shouldAttachConfigurationSet(MessageSending $event): bool
+    {
+        $mailer = $event->data['mailer'] ?? 'ses';
+
+        return ! config("mail.mailers.{$mailer}.options.ConfigurationSetName");
     }
 
     /**

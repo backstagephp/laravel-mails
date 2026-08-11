@@ -335,6 +335,19 @@ SES only publishes events for mails that were sent under the configuration set y
 
 In that case, register the webhooks against the same name by setting `services.ses.configuration_set_name` to it.
 
+#### Using the `ses-v2` transport
+
+Mailers on Laravel's `ses-v2` transport are supported too and resolve to the same driver. The `X-SES-CONFIGURATION-SET` header is only documented for the v1 API though, so with `ses-v2` you have to attach the configuration set to the mailer yourself:
+
+```php
+'ses' => [
+    'transport' => 'ses-v2',
+    'options' => [
+        'ConfigurationSetName' => env('AWS_SES_CONFIGURATION_SET', 'laravel-mails-ses-webhook'),
+    ],
+],
+```
+
 ## Usage
 
 ### Logging

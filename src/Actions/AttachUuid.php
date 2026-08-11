@@ -39,7 +39,9 @@ class AttachUuid
 
     public function driverExistsForProvider(string $provider): bool
     {
-        return class_exists('Backstage\\Mails\\Laravel\\Drivers\\' . ucfirst($provider) . 'Driver');
+        // Studly rather than ucfirst, because the ses-v2 transport must
+        // resolve to SesV2Driver, the same way the provider manager does.
+        return class_exists('Backstage\\Mails\\Laravel\\Drivers\\' . Str::studly($provider) . 'Driver');
     }
 
     public function trackingEnabled(): bool
