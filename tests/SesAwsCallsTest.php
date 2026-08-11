@@ -1,5 +1,6 @@
 <?php
 
+use Aws\Exception\AwsException;
 use Aws\History;
 use Aws\Middleware;
 use Aws\MockHandler;
@@ -163,7 +164,7 @@ it('unsuppresses an email address through the sesv2 api', function (): void {
 it('returns a client error response when unsuppressing fails', function (): void {
     $sesV2Handler = new MockHandler;
     $sesV2Handler->append(function ($command) {
-        return new Aws\Exception\AwsException('Access denied', $command);
+        return new AwsException('Access denied', $command);
     });
 
     $driver = mockedSesDriver(new MockHandler, new MockHandler, $sesV2Handler, new History);
