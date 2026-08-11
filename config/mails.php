@@ -130,7 +130,7 @@ return [
         ],
 
         'complained' => [
-            //
+            'notify' => [],
         ],
 
         'unsent' => [

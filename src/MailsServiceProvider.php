@@ -8,6 +8,7 @@ use Backstage\Mails\Laravel\Commands\PruneMailCommand;
 use Backstage\Mails\Laravel\Commands\ResendMailCommand;
 use Backstage\Mails\Laravel\Commands\WebhooksMailCommand;
 use Backstage\Mails\Laravel\Contracts\MailProviderContract;
+use Backstage\Mails\Laravel\Events\MailComplained;
 use Backstage\Mails\Laravel\Events\MailEvent;
 use Backstage\Mails\Laravel\Events\MailHardBounced;
 use Backstage\Mails\Laravel\Events\MailUnsuppressed;
@@ -16,6 +17,7 @@ use Backstage\Mails\Laravel\Listeners\LogMailEvent;
 use Backstage\Mails\Laravel\Listeners\LogSendingMail;
 use Backstage\Mails\Laravel\Listeners\LogSentMail;
 use Backstage\Mails\Laravel\Listeners\NotifyOnBounce;
+use Backstage\Mails\Laravel\Listeners\NotifyOnSpamComplaint;
 use Backstage\Mails\Laravel\Listeners\StoreMailRelations;
 use Backstage\Mails\Laravel\Listeners\UnsuppressEmailAddress;
 use Backstage\Mails\Laravel\Managers\MailProviderManager;
@@ -38,6 +40,7 @@ class MailsServiceProvider extends PackageServiceProvider
 
         $this->app['events']->listen(MessageSent::class, LogSentMail::class);
         $this->app['events']->listen(MailHardBounced::class, NotifyOnBounce::class);
+        $this->app['events']->listen(MailComplained::class, NotifyOnSpamComplaint::class);
         $this->app['events']->listen(MailUnsuppressed::class, UnsuppressEmailAddress::class);
     }
 

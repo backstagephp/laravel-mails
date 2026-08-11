@@ -12,7 +12,7 @@ class NotifyOnBounce
 
     public function handle(MailHardBounced $mailHardBounced): void
     {
-        if (! $channels = config('mails.events.bounce.notify')) {
+        if (! $channels = config('mails.events.hard_bounced.notify')) {
             return;
         }
 

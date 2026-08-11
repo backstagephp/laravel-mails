@@ -227,7 +227,7 @@ This is the contents of the published config file:
     ],
 
     'complained' => [
-        //
+        'notify' => [],
     ],
 
     'unsent' => [
@@ -341,21 +341,222 @@ In that case, register the webhooks against the same name by setting `services.s
 
 When you send emails within Laravel using the `Mail` Facade or using a `Mailable`, Laravel Mails will log the email sending and all events that are incoming from your email service provider.
 
+Logging happens automatically, so there is nothing to call yourself. Which attributes end up in the database is up to you: `mails.logging.attributes` decides what is stored, and `mails.logging.encrypted` encrypts those attributes at rest. Set `mails.logging.enabled` to `false` to switch logging off entirely, and use `mails.logging.attachments` to control whether attachments are copied to disk.
+
+Every logged mail is a `Mail` model, with the events that came in from your provider attached to it:
+
+```php
+use Backstage\Mails\Laravel\Models\Mail;
+
+$mail = Mail::latest()->first();
+
+$mail->subject;      // 'Your order has shipped'
+$mail->to;           // ['customer@example.com' => 'Customer']
+$mail->status;       // 'Delivered', 'Hard Bounced', 'Opened', ...
+$mail->opens;        // 3
+$mail->delivered_at; // Carbon instance, or null
+$mail->events;       // all events received for this mail, newest first
+$mail->attachments;  // the attachments that were sent along
+```
+
+A set of scopes is available to query them:
+
+```php
+Mail::sent()->count();
+Mail::unsent()->count();
+Mail::delivered()->count();
+Mail::opened()->count();
+Mail::clicked()->count();
+Mail::complained()->count();
+Mail::bounced()->count();      // soft and hard bounces
+Mail::softBounced()->count();
+Mail::hardBounced()->count();
+Mail::resent()->count();
+```
+
 ### Relate emails to Eloquent models
 
-...
+Emails are often about something: an order confirmation belongs to an `Order`, a password reset to a `User`. You can attach any Eloquent model to a mail, so you can later ask a model which emails were sent about it.
+
+First, let the model implement the `HasAssociatedMails` contract and use the `HasMails` trait:
+
+```php
+use Backstage\Mails\Laravel\Contracts\HasAssociatedMails;
+use Backstage\Mails\Laravel\Traits\HasMails;
+use Illuminate\Database\Eloquent\Model;
+
+class Order extends Model implements HasAssociatedMails
+{
+    use HasMails;
+}
+```
+
+Then use the `AssociatesModels` trait in your mailable and associate the models you want:
+
+```php
+use Backstage\Mails\Laravel\Traits\AssociatesModels;
+use Illuminate\Mail\Mailable;
+
+class OrderShipped extends Mailable
+{
+    use AssociatesModels;
+
+    public function __construct(public Order $order)
+    {
+        $this->associateWith($order);
+    }
+}
+```
+
+`associateWith()` takes a single model, an array of models or a collection. The models are passed along in an encrypted header and linked to the logged mail while it is being sent, so nothing is exposed to your email provider.
+
+Because the link is made through the tracking uuid, associating only works for mailers whose transport is one of the supported providers, with tracking enabled in `mails.logging.tracking`.
+
+Afterwards you can read the emails and their events straight off the model:
+
+```php
+$order->mails;   // every mail sent about this order
+$order->events;  // every event received for those mails
+
+$order->mails()->hardBounced()->exists();
+```
+
+You can also link a mail to a model yourself, for example when you did not send it through a mailable:
+
+```php
+$order->associateMail($mail);
+```
 
 ### Resend a logged email
 
-...
+Because the package stores the rendered content of every email, a logged email can be sent again — to the original recipient, or to somebody else entirely. This is useful when a customer says an email never arrived.
+
+The quickest way is the artisan command, which takes the uuid of the logged mail:
+
+```bash
+php artisan mail:resend 9a3f8e1c-...
+```
+
+The command is interactive and asks for every recipient you did not pass, so you can accept the original recipients by leaving a prompt empty. Pass all three to run it without any prompts:
+
+```bash
+php artisan mail:resend 9a3f8e1c-... other@example.com --cc=boss@example.com --bcc=archive@example.com
+```
+
+From your own code, use the `ResendMail` action:
+
+```php
+use Backstage\Mails\Laravel\Actions\ResendMail;
+use Backstage\Mails\Laravel\Models\Mail;
+
+$mail = Mail::where('uuid', $uuid)->first();
+
+(new ResendMail)($mail, to: ['other@example.com']);
+```
+
+Resending is queued, and the original attachments are sent along. When it goes out, the `MailResent` event is dispatched and the mail's `resent_at` timestamp is updated, so a resent email is easy to recognise later.
 
 ### Get notified of important events such as bounces, high bounce rate or spam complaints
 
-...
+The whole point of logging emails is to hear about it when something goes wrong before your customer does. The package can notify you over `mail`, `discord`, `slack` and `telegram`.
+
+First tell the package where to send notifications, per channel:
+
+```php
+'notifications' => [
+    'mail' => [
+        'to' => ['developers@example.com'],
+    ],
+
+    'discord' => [
+        'to' => ['1234567890'],
+    ],
+
+    'slack' => [
+        'to' => ['https://hooks.slack.com/services/...'],
+    ],
+
+    'telegram' => [
+        'to' => ['1234567890'],
+    ],
+],
+```
+
+Every channel except `mail` needs its own notification channel package:
+
+```bash
+composer require laravel-notification-channels/discord
+composer require laravel/slack-notification-channel
+composer require laravel-notification-channels/telegram
+```
+
+Then pick which channels each event should notify. An empty array means no notification is sent:
+
+```php
+'events' => [
+    // A mail hard bounced, so this address will never receive mail again
+    'hard_bounced' => [
+        'notify' => ['mail', 'discord'],
+    ],
+
+    // Somebody marked one of your mails as spam
+    'complained' => [
+        'notify' => ['mail'],
+    ],
+
+    // Too many of your mails bounce, which puts your sending reputation at risk
+    'bouncerate' => [
+        'notify' => ['mail'],
+
+        'retain' => 30, // look at the mails of the last 30 days
+
+        'treshold' => 1, // notify above 1%
+    ],
+],
+```
+
+Hard bounces and spam complaints are reported the moment the webhook comes in. The bounce rate is not tied to a single email, so it is checked by a command that you schedule yourself:
+
+```php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('mail:bounce-rate')->daily();
+```
+
+The command compares the bounce rate over the retained period against your threshold, notifies you when it is exceeded, and exits with a failure status so your scheduler can pick it up as well. You can always run it by hand:
+
+```bash
+php artisan mail:bounce-rate
+```
 
 ### Prune logged emails
 
-...
+Logging every email means the table grows quickly, especially when you store the html of every message. The package therefore ships with a pruning command that removes old logged mails, including their events and attachment records:
+
+```bash
+php artisan mail:prune
+```
+
+How long mails are kept is configured in the config file:
+
+```php
+'database' => [
+    'pruning' => [
+        'enabled' => true,
+        'after' => 30, // days
+    ],
+],
+```
+
+Pruning only happens when it is enabled; the command tells you when it is not. Attachment files that were copied to disk are not removed, so clean up that directory separately if you store attachments.
+
+Schedule the command to keep the table slim without thinking about it:
+
+```php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('mail:prune')->daily();
+```
 
 ## Events
 
