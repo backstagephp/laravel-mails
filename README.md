@@ -68,6 +68,10 @@ Add the API key of your email service provider to the `config/services.php` file
     'token' => env('POSTMARK_TOKEN'),
 ],
 
+'resend' => [
+    'key' => env('RESEND_KEY'),
+],
+
 'mailgun' => [
     'domain' => env('MAILGUN_DOMAIN'),
     'secret' => env('MAILGUN_SECRET'),
