@@ -73,7 +73,7 @@ it('does not register a second resend webhook for the same endpoint', function (
     config()->set('services.resend.key', 'resend-key');
 
     // A rotated app key changes the signature, but the webhook is still ours.
-    $endpoint = URL::signedRoute('mails.webhook', ['provider' => Provider::RESEND]) . '-outdated-signature';
+    $endpoint = URL::signedRoute('mails.webhook', ['provider' => Provider::RESEND]).'-outdated-signature';
 
     Http::fake(['api.resend.com/webhooks' => Http::response(['data' => [['endpoint' => $endpoint]]])]);
 

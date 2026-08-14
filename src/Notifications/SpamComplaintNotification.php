@@ -30,7 +30,7 @@ class SpamComplaintNotification extends Notification implements ShouldQueue
             '🔥', '🧯', '‼️', '⁉️', '🔴', '📣', '😅', '🥵',
         ]);
 
-        return $emoji . ' mail has bounced';
+        return $emoji.' mail has bounced';
     }
 
     public function toDiscord(): DiscordMessage

@@ -28,7 +28,7 @@ class AttachUuid
 
     public function getProvider(MessageSending $messageSending): string
     {
-        return config('mail.mailers.' . $messageSending->data['mailer'] . '.transport') ?? $messageSending->data['mailer'];
+        return config('mail.mailers.'.$messageSending->data['mailer'].'.transport') ?? $messageSending->data['mailer'];
     }
 
     public function shouldTrackMails(string $provider): bool
@@ -41,7 +41,7 @@ class AttachUuid
     {
         // Studly rather than ucfirst, because the ses-v2 transport must
         // resolve to SesV2Driver, the same way the provider manager does.
-        return class_exists('Backstage\\Mails\\Laravel\\Drivers\\' . Str::studly($provider) . 'Driver');
+        return class_exists('Backstage\\Mails\\Laravel\\Drivers\\'.Str::studly($provider).'Driver');
     }
 
     public function trackingEnabled(): bool
