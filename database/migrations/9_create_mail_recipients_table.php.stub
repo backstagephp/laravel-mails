@@ -1,0 +1,97 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * One row per to/cc/bcc address, so the mails index can find mails by
+     * recipient with an index lookup. Searching the JSON `to` column with
+     * `LIKE '%term%'` scans the whole mails table, and a FULLTEXT index is
+     * no help either: MySQL splits addresses into words and drops `com` as
+     * a stopword. Everything is stored lowercased; prefix matches on these
+     * columns (`email like 'john%'`) can then use a plain B-tree index.
+     */
+    public function up(): void
+    {
+        $recipients = config('mails.database.tables.recipients', 'mail_recipients');
+        $isPostgres = Schema::getConnection()->getDriverName() === 'pgsql';
+
+        Schema::create($recipients, function (Blueprint $table) use ($isPostgres) {
+            $table->id();
+            $table->foreignIdFor(config('mails.models.mail'))
+                ->constrained(config('mails.database.tables.mails', 'mails'))
+                ->cascadeOnDelete();
+            $table->string('email');
+            $table->string('name')->nullable();
+            $table->string('domain')->nullable();
+
+            foreach (['email', 'name', 'domain'] as $column) {
+                // PostgreSQL only uses a B-tree for LIKE prefix matches with a
+                // pattern operator class (unless the database uses the C locale).
+                $isPostgres
+                    ? $table->rawIndex("{$column} varchar_pattern_ops", "{$table->getTable()}_{$column}_index")
+                    : $table->index($column);
+            }
+        });
+
+        $this->backfill($recipients, (new (config('mails.models.mail')))->getForeignKey());
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists(config('mails.database.tables.recipients', 'mail_recipients'));
+    }
+
+    protected function backfill(string $recipients, string $foreignKey): void
+    {
+        DB::table(config('mails.database.tables.mails', 'mails'))
+            ->select(['id', 'to', 'cc', 'bcc'])
+            ->chunkById(1000, function ($mails) use ($recipients, $foreignKey): void {
+                $rows = [];
+
+                foreach ($mails as $mail) {
+                    array_push($rows, ...$this->rowsFor($mail, $foreignKey));
+                }
+
+                foreach (array_chunk($rows, 1000) as $chunk) {
+                    DB::table($recipients)->insert($chunk);
+                }
+            });
+    }
+
+    /**
+     * Kept in sync with Mail::recipientRows(); duplicated so this migration
+     * keeps working if the model changes later.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function rowsFor(object $mail, string $foreignKey): array
+    {
+        $rows = [];
+
+        foreach (['to', 'cc', 'bcc'] as $field) {
+            foreach ((array) json_decode($mail->{$field} ?? '[]', true) as $email => $name) {
+                $email = mb_strtolower(trim((string) $email));
+
+                if ($email === '' || isset($rows[$email])) {
+                    continue;
+                }
+
+                $domain = str_contains($email, '@') ? substr($email, strrpos($email, '@') + 1) : null;
+
+                $rows[$email] = [
+                    $foreignKey => $mail->id,
+                    'email' => mb_substr($email, 0, 255),
+                    'name' => filled($name) ? mb_substr(mb_strtolower(trim((string) $name)), 0, 255) : null,
+                    'domain' => $domain !== null ? mb_substr($domain, 0, 255) : null,
+                ];
+            }
+        }
+
+        return array_values($rows);
+    }
+};
