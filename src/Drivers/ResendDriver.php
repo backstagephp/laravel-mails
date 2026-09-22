@@ -62,7 +62,7 @@ class ResendDriver extends MailDriver implements MailDriverContract
         ]);
 
         if ($response->successful()) {
-            $components->info('Created Resend webhook for: ' . implode(', ', $events));
+            $components->info('Created Resend webhook for: '.implode(', ', $events));
 
             return;
         }

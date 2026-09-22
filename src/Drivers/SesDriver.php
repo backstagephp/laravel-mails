@@ -100,7 +100,7 @@ class SesDriver extends MailDriver implements MailDriverContract
             }
 
             // 4. Register SNS as the event destination (remove existing first to avoid duplicates)
-            $eventDestinationName = $configurationSet . '-sns';
+            $eventDestinationName = $configurationSet.'-sns';
 
             try {
                 $sesClient->deleteConfigurationSetEventDestination([
@@ -142,7 +142,7 @@ class SesDriver extends MailDriver implements MailDriverContract
             return;
         }
 
-        $components->info('Created SES Webhooks for: ' . implode(', ', $events));
+        $components->info('Created SES Webhooks for: '.implode(', ', $events));
     }
 
     public function verifyWebhookSignature(array $payload): bool
