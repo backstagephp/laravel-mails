@@ -119,8 +119,70 @@ class Mail extends Model
     protected static function booted(): void
     {
         static::created(function (Mail $mail): void {
+            $mail->syncRecipients();
+
             event(MailLogged::class, $mail);
         });
+
+        static::updated(function (Mail $mail): void {
+            if ($mail->wasChanged(['to', 'cc', 'bcc'])) {
+                $mail->syncRecipients();
+            }
+        });
+    }
+
+    public static function getRecipientsTable(): string
+    {
+        return config('mails.database.tables.recipients', 'mail_recipients');
+    }
+
+    /**
+     * Mirror the to/cc/bcc addresses into the recipients table, which is what
+     * the mails index searches on (see the 9_create_mail_recipients_table
+     * migration for why).
+     */
+    public function syncRecipients(): void
+    {
+        $connection = $this->getConnection();
+
+        $connection->table(static::getRecipientsTable())
+            ->where($this->getForeignKey(), $this->getKey())
+            ->delete();
+
+        $rows = $this->recipientRows();
+
+        if ($rows !== []) {
+            $connection->table(static::getRecipientsTable())->insert($rows);
+        }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function recipientRows(): array
+    {
+        $rows = [];
+
+        foreach ([$this->to, $this->cc, $this->bcc] as $addresses) {
+            foreach ((array) $addresses as $email => $name) {
+                $email = mb_strtolower(trim((string) $email));
+
+                if ($email === '' || isset($rows[$email])) {
+                    continue;
+                }
+
+                $domain = str_contains($email, '@') ? substr($email, strrpos($email, '@') + 1) : null;
+
+                $rows[$email] = [
+                    $this->getForeignKey() => $this->getKey(),
+                    'email' => mb_substr($email, 0, 255),
+                    'name' => filled($name) ? mb_substr(mb_strtolower(trim((string) $name)), 0, 255) : null,
+                    'domain' => $domain !== null ? mb_substr($domain, 0, 255) : null,
+                ];
+            }
+        }
+
+        return array_values($rows);
     }
 
     protected static function newFactory(): Factory

@@ -22,6 +22,7 @@ return [
             'attachments' => 'mail_attachments',
             'events' => 'mail_events',
             'polymorph' => 'mailables',
+            'recipients' => 'mail_recipients',
         ],
 
         'pruning' => [
