@@ -58,7 +58,7 @@ it('backfills the recipients of existing mails when migrating', function () {
         'bcc' => null,
     ]);
 
-    (include __DIR__ . '/../database/migrations/9_create_mail_recipients_table.php.stub')->up();
+    (include __DIR__.'/../database/migrations/9_create_mail_recipients_table.php.stub')->up();
 
     expect(recipientRows(Mail::find($id)))->toBe([
         ['email' => 'first@example.com', 'name' => 'first', 'domain' => 'example.com'],
