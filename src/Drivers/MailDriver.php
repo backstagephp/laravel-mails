@@ -2,9 +2,11 @@
 
 namespace Backstage\Mails\Laravel\Drivers;
 
+use Backstage\Mails\Laravel\Enums\SendFailure;
 use Backstage\Mails\Laravel\Exceptions\LaravelMailException;
 use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Support\Str;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 abstract class MailDriver
 {
@@ -102,6 +104,48 @@ abstract class MailDriver
             // update mail record with timestamp
             $this->{$method}($mail, $this->getTimestampFromPayload($payload));
         }
+    }
+
+    /**
+     * Classify a failed send by matching the provider's error code against
+     * the driver's sendFailureMapping(). Anything unmapped is transient, so
+     * it is retried as before.
+     */
+    public function getSendFailure(TransportExceptionInterface $exception): SendFailure
+    {
+        $code = $this->getErrorCodeFromException($exception);
+
+        if (is_null($code)) {
+            return SendFailure::TRANSIENT;
+        }
+
+        foreach ($this->sendFailureMapping() as $failure => $codes) {
+            if (in_array($code, $codes, true)) {
+                return SendFailure::from($failure);
+            }
+        }
+
+        return SendFailure::TRANSIENT;
+    }
+
+    /**
+     * Provider error codes per SendFailure, e.g.
+     * [SendFailure::PERMANENT->value => [300, 400]].
+     */
+    public function sendFailureMapping(): array
+    {
+        return [];
+    }
+
+    /**
+     * Symfony's HTTP API transports (Postmark, Mailgun) end their error
+     * messages in "(code <code>)."; drivers with another format override this.
+     */
+    protected function getErrorCodeFromException(TransportExceptionInterface $exception): int | string | null
+    {
+        return preg_match('/\(code (\d+)\)\.?$/', $exception->getMessage(), $matches)
+            ? (int) $matches[1]
+            : null;
     }
 
     public function accepted(Mail $mail, string $timestamp): void

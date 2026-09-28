@@ -11,12 +11,14 @@ use Aws\Sns\SnsClient;
 use Backstage\Mails\Laravel\Contracts\MailDriverContract;
 use Backstage\Mails\Laravel\Enums\EventType;
 use Backstage\Mails\Laravel\Enums\Provider;
+use Backstage\Mails\Laravel\Enums\SendFailure;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class SesDriver extends MailDriver implements MailDriverContract
 {
@@ -284,6 +286,45 @@ class SesDriver extends MailDriver implements MailDriverContract
         }
 
         return parent::getEventFromPayload($sesMessage);
+    }
+
+    /**
+     * AWS error codes of the SES v1 and v2 APIs. SES accepts recipients on
+     * the account suppression list and reports them later as a permanent
+     * bounce.
+     *
+     * @see https://docs.aws.amazon.com/ses/latest/APIReference/API_SendRawEmail.html#API_SendRawEmail_Errors
+     * @see https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_SendEmail.html#API_SendEmail_Errors
+     */
+    public function sendFailureMapping(): array
+    {
+        return [
+            SendFailure::PERMANENT->value => [
+                'AccessDenied',
+                'AccountSendingPausedException',
+                'AccountSuspendedException',
+                'BadRequestException',
+                'ConfigurationSetDoesNotExist',
+                'ConfigurationSetDoesNotExistException',
+                'ConfigurationSetSendingPausedException',
+                'InvalidParameterValue',
+                'MailFromDomainNotVerified',
+                'MailFromDomainNotVerifiedException',
+                'MessageRejected',
+                'NotFoundException',
+                'SendingPausedException',
+            ],
+        ];
+    }
+
+    /**
+     * Laravel's SES transports wrap the AwsException carrying the error code.
+     */
+    protected function getErrorCodeFromException(TransportExceptionInterface $exception): int | string | null
+    {
+        $previous = $exception->getPrevious();
+
+        return $previous instanceof AwsException ? $previous->getAwsErrorCode() : null;
     }
 
     public function eventMapping(): array

@@ -5,6 +5,7 @@ namespace Backstage\Mails\Laravel\Drivers;
 use Backstage\Mails\Laravel\Contracts\MailDriverContract;
 use Backstage\Mails\Laravel\Enums\EventType;
 use Backstage\Mails\Laravel\Enums\Provider;
+use Backstage\Mails\Laravel\Enums\SendFailure;
 use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
@@ -159,6 +160,31 @@ class PostmarkDriver extends MailDriver implements MailDriverContract
             EventType::DMARC_POLICY->value => ['RecordType' => 'Bounce', 'Type' => 'DMARCPolicy'],
             EventType::TEMPLATE_RENDERING_FAILED->value => ['RecordType' => 'Bounce', 'Type' => 'TemplateRenderingFailed'],
             EventType::UNKNOWN->value => ['RecordType' => 'Bounce', 'Type' => 'Unknown'],
+        ];
+    }
+
+    /**
+     * Postmark ErrorCodes, sent with HTTP 422. Suppressed recipients are
+     * rejected at send time with 406 instead of bouncing later.
+     *
+     * @see https://postmarkapp.com/developer/api/overview#error-codes
+     */
+    public function sendFailureMapping(): array
+    {
+        return [
+            SendFailure::INACTIVE_RECIPIENT->value => [
+                406, // Inactive recipient
+            ],
+            SendFailure::PERMANENT->value => [
+                10,  // Bad or missing API token
+                300, // Invalid email request
+                400, // Sender signature not found
+                401, // Sender signature not confirmed
+                402, // Invalid JSON
+                403, // Incompatible JSON
+                409, // JSON required
+                411, // Forbidden attachment type
+            ],
         ];
     }
 
