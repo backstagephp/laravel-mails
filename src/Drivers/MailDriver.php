@@ -141,7 +141,7 @@ abstract class MailDriver
      * Symfony's HTTP API transports (Postmark, Mailgun) end their error
      * messages in "(code <code>)."; drivers with another format override this.
      */
-    protected function getErrorCodeFromException(TransportExceptionInterface $exception): int | string | null
+    protected function getErrorCodeFromException(TransportExceptionInterface $exception): int|string|null
     {
         return preg_match('/\(code (\d+)\)\.?$/', $exception->getMessage(), $matches)
             ? (int) $matches[1]
