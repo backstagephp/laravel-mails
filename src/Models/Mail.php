@@ -4,6 +4,7 @@ namespace Backstage\Mails\Laravel\Models;
 
 use Backstage\Mails\Laravel\Database\Factories\MailFactory;
 use Backstage\Mails\Laravel\Events\MailLogged;
+use Backstage\Mails\Laravel\Events\MailSent;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -127,6 +128,10 @@ class Mail extends Model
         static::updated(function (Mail $mail): void {
             if ($mail->wasChanged(['to', 'cc', 'bcc'])) {
                 $mail->syncRecipients();
+            }
+
+            if ($mail->wasChanged('sent_at') && $mail->getRawOriginal('sent_at') === null && $mail->sent_at !== null) {
+                event(new MailSent($mail));
             }
         });
     }
