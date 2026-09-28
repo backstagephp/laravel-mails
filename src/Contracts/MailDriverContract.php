@@ -2,9 +2,11 @@
 
 namespace Backstage\Mails\Laravel\Contracts;
 
+use Backstage\Mails\Laravel\Enums\SendFailure;
 use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 interface MailDriverContract
 {
@@ -43,4 +45,8 @@ interface MailDriverContract
     public function unsubscribed(Mail $mail, string $timestamp): void;
 
     public function unsuppressEmailAddress(string $address, ?int $stream_id = null): Response;
+
+    public function getSendFailure(TransportExceptionInterface $exception): SendFailure;
+
+    public function sendFailureMapping(): array;
 }

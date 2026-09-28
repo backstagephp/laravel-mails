@@ -5,6 +5,7 @@ namespace Backstage\Mails\Laravel\Drivers;
 use Backstage\Mails\Laravel\Contracts\MailDriverContract;
 use Backstage\Mails\Laravel\Enums\EventType;
 use Backstage\Mails\Laravel\Enums\Provider;
+use Backstage\Mails\Laravel\Enums\SendFailure;
 use Illuminate\Http\Client\Response;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Http;
@@ -126,6 +127,25 @@ class MailgunDriver extends MailDriver implements MailDriverContract
             EventType::OPENED->value => ['event-data.event' => 'opened'],
             EventType::SOFT_BOUNCED->value => ['event-data.event' => 'failed', 'event-data.severity' => 'temporary'],
             EventType::UNSUBSCRIBED->value => ['event-data.event' => 'unsubscribed'],
+        ];
+    }
+
+    /**
+     * Mailgun HTTP statuses. Mailgun accepts suppressed recipients and
+     * reports them later as a permanent "failed" event (a hard bounce).
+     *
+     * @see https://documentation.mailgun.com/docs/mailgun/api-reference/api-overview#errors
+     */
+    public function sendFailureMapping(): array
+    {
+        return [
+            SendFailure::PERMANENT->value => [
+                400, // Bad request, e.g. an invalid recipient
+                401, // Invalid API key
+                403, // Forbidden
+                404, // Domain not found
+                413, // Message too large
+            ],
         ];
     }
 
