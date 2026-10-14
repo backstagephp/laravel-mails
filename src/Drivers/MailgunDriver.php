@@ -148,7 +148,7 @@ class MailgunDriver extends MailDriver implements MailDriverContract
     {
         $pendingRequest = Http::asJson()
             ->withBasicAuth('api', config('services.mailgun.secret'))
-            ->baseUrl(config('services.mailgun.endpoint').'/v3/');
+            ->baseUrl(config('services.mailgun.scheme', 'https').'://'.config('services.mailgun.endpoint').'/v3/');
 
         return $pendingRequest->delete(config('services.mailgun.domain').'/unsubscribes/'.$address);
     }
