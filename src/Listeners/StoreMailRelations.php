@@ -20,12 +20,18 @@ class StoreMailRelations
 
         $mail = $this->getMailModel($message);
 
+        // Nothing to link to when mail logging is disabled.
+        if (! $mail instanceof Model) {
+            return;
+        }
+
         foreach ($models as $identifier) {
             [$model, $keyName, $id] = $identifier;
 
             $model = $model::query()->where($keyName, $id)->limit(1)->first();
 
-            $model->associateMail($mail);
+            // The model may have been deleted after the mail was queued.
+            $model?->associateMail($mail);
         }
     }
 
@@ -36,7 +42,7 @@ class StoreMailRelations
         );
     }
 
-    protected function getAssociatedModels(Email $email): array | false
+    protected function getAssociatedModels(Email $email): array|false
     {
         $encrypted = $this->getHeaderBody(
             $email,
@@ -48,7 +54,7 @@ class StoreMailRelations
         return json_decode((string) $payload, true);
     }
 
-    protected function getMailModel(Email $email): Model
+    protected function getMailModel(Email $email): ?Model
     {
         $uuid = $this->getHeaderBody($email, config('mails.headers.uuid'));
 

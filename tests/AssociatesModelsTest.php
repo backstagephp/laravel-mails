@@ -70,3 +70,15 @@ it('can associate a mail with a model by hand', function (): void {
 
     expect($order->refresh()->mails)->toHaveCount(1);
 });
+
+it('still sends when the associated model was deleted in the meantime', function (): void {
+    $order = TestOrder::create();
+
+    $mailable = new TestOrderShipped($order);
+
+    $order->delete();
+
+    Mail::to('customer@example.com')->send($mailable);
+
+    expect(MailModel::count())->toBe(1);
+});
